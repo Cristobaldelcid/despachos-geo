@@ -1,0 +1,3 @@
+const SUPABASE_URL = 'https://hhprcezwbylbbmkruvct.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhocHJjZXp3YnlsYmJta3J1dmN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTQ5MTAsImV4cCI6MjA5MzEzMDkxMH0.cgE4VZQ2kt8miGSrXa6t-L4jU9jiWuoROBq9DpjvgdE';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_oMXkPUDxg4qt5PGh6ZHFPg_2f6b3cXn';

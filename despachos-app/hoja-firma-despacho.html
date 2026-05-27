@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador Hoja de Despacho — GEO</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#ebebea;
+  --text:#1a1a19;--text2:#5a5a57;--text3:#9a9894;
+  --border:#e0dedd;--border2:#c8c7c4;
+  --azul:#1a3a6b;--azul-claro:#dce6f1;
+  --verde:#15803d;--verde-claro:#c6efce;
+  --naranja:#e26b0a;--naranja-claro:#fce4d6;
+  --rojo-claro:#ffc7ce;--amarillo:#fff2cc;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:var(--text);background:var(--bg3);min-height:100vh}
+.app{max-width:700px;margin:0 auto;padding:20px 16px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+header h1{font-size:19px;font-weight:700}
+header p{font-size:12px;color:var(--text3);margin-top:2px}
+.badge-geo{background:var(--azul);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+.card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.drop-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--azul);background:var(--azul-claro)}
+.drop-icon{font-size:40px;margin-bottom:10px}
+.drop-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+.drop-sub{font-size:13px;color:var(--text2)}
+.drop-sub span{color:var(--azul);text-decoration:underline;cursor:pointer}
+input[type=file]{display:none}
+.file-selected{display:none;align-items:center;gap:12px;padding:14px;background:var(--azul-claro);border-radius:var(--radius);margin-top:12px}
+.file-selected.show{display:flex}
+.file-name{font-size:14px;font-weight:600;color:var(--azul)}
+.file-size{font-size:12px;color:var(--text2)}
+.btn-change{background:transparent;border:1px solid var(--border2);border-radius:var(--radius);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--text2);margin-left:auto}
+.btn-generar{width:100%;padding:13px;border:none;border-radius:var(--radius);background:var(--azul);color:#fff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:opacity .15s;margin-bottom:10px}
+.btn-generar:hover{opacity:.9}
+.btn-generar:disabled{opacity:.4;cursor:not-allowed}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.preview-box{display:none}
+.preview-box.show{display:block}
+.resumen{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+.res-card{background:var(--bg2);border-radius:var(--radius);padding:12px;text-align:center;border:1px solid var(--border)}
+.res-num{font-size:22px;font-weight:700}
+.res-label{font-size:11px;color:var(--text2);margin-top:3px}
+.res-ok .res-num{color:var(--verde)}
+.res-warn .res-num{color:#b45309}
+.res-mat .res-num{color:var(--azul)}
+.res-imp .res-num{color:var(--naranja)}
+.alertas{margin-bottom:14px}
+.alerta-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:var(--radius);margin-bottom:6px;font-size:13px}
+.alerta-rojo{background:var(--rojo-claro);border-left:4px solid #c00}
+.alerta-amarillo{background:var(--amarillo);border-left:4px solid #b45309}
+.btn-row{display:flex;gap:10px}
+.btn-dl{flex:1;padding:13px;border:none;border-radius:var(--radius);color:#fff;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.btn-dl:hover{opacity:.9}
+.btn-excel{background:var(--verde)}
+.btn-pdf{background:#c0392b}
+.instrucciones{background:var(--azul-claro);border-radius:var(--radius);padding:14px;font-size:13px;color:var(--azul);line-height:1.7;border-left:4px solid var(--azul)}
+.paso{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+.paso:last-child{margin-bottom:0}
+.paso-num{background:var(--azul);color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Generador de Hoja de Despacho</h1>
+      <p>GEOINFORMATICA S.A. — Sube el Excel del proyecto y genera la hoja automaticamente</p>
+    </div>
+    <span class="badge-geo">GEO</span>
+  </header>
+
+  <div class="card">
+    <div class="card-title">Como funciona</div>
+    <div class="instrucciones">
+      <div class="paso"><span class="paso-num">1</span><span>Subis el Excel del proyecto (con las hojas Cotizacion, COST y MAT)</span></div>
+      <div class="paso"><span class="paso-num">2</span><span>La app compara Marca/Modelo/Descripcion entre cotizacion y costeo</span></div>
+      <div class="paso"><span class="paso-num">3</span><span>Muestra la cantidad de cotizacion vs costeo y calcula cuanto despachar</span></div>
+      <div class="paso"><span class="paso-num">4</span><span>Descarga Excel completo o PDF solo para bodega</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Subir archivo Excel del proyecto</div>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="drop-icon">📂</div>
+      <div class="drop-title">Arrastra el Excel aqui</div>
+      <div class="drop-sub">o <span>busca en tu computadora</span></div>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <div class="file-selected" id="fileSelected">
+      <span style="font-size:28px">📊</span>
+      <div>
+        <div class="file-name" id="fileName">archivo.xlsx</div>
+        <div class="file-size" id="fileSize">0 KB</div>
+      </div>
+      <button class="btn-change" onclick="resetFile()">Cambiar</button>
+    </div>
+  </div>
+
+  <button class="btn-generar" id="btnGenerar" onclick="procesar()" disabled>
+    <div class="spinner" id="spinner"></div>
+    <span id="btnLabel">Selecciona un archivo primero</span>
+  </button>
+
+  <div class="preview-box" id="previewBox">
+    <div class="card">
+      <div class="card-title">Resumen del analisis</div>
+      <div class="resumen">
+        <div class="res-card res-ok"><div class="res-num" id="resOk">0</div><div class="res-label">Items OK</div></div>
+        <div class="res-card res-warn"><div class="res-num" id="resWarn">0</div><div class="res-label">Con alerta</div></div>
+        <div class="res-card res-mat"><div class="res-num" id="resMat">0</div><div class="res-label">Materiales</div></div>
+        <div class="res-card res-imp"><div class="res-num" id="resImp">0</div><div class="res-label">Imprevistos</div></div>
+      </div>
+      <div class="alertas" id="alertasBox"></div>
+      <div class="btn-row">
+        <button class="btn-dl btn-excel" onclick="descargarExcel()">Descargar Excel completo</button>
+        <button class="btn-dl btn-pdf" onclick="descargarPDF()">PDF para bodega</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let archivoBytes=null, nombreArchivo='', wbProcesado=null, datosDespacho=null;
+const {jsPDF}=window.jspdf;
+
+const dropZone=document.getElementById('dropZone');
+const fileInput=document.getElementById('fileInput');
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over')});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');if(e.dataTransfer.files[0])cargarArchivo(e.dataTransfer.files[0])});
+fileInput.addEventListener('change',e=>{if(e.target.files[0])cargarArchivo(e.target.files[0])});
+
+function cargarArchivo(file){
+  if(!file.name.match(/\.xlsx?$/i)){alert('Solo archivos Excel (.xlsx)');return}
+  nombreArchivo=file.name;
+  document.getElementById('fileName').textContent=file.name;
+  document.getElementById('fileSize').textContent=(file.size/1024).toFixed(1)+' KB';
+  document.getElementById('fileSelected').classList.add('show');
+  document.getElementById('previewBox').classList.remove('show');
+  wbProcesado=null;datosDespacho=null;
+  const reader=new FileReader();
+  reader.onload=e=>{archivoBytes=e.target.result;document.getElementById('btnGenerar').disabled=false;document.getElementById('btnLabel').textContent='Generar hoja DESPACHO'};
+  reader.readAsArrayBuffer(file);
+}
+
+function resetFile(){
+  archivoBytes=null;nombreArchivo='';fileInput.value='';
+  document.getElementById('fileSelected').classList.remove('show');
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('btnGenerar').disabled=true;
+  document.getElementById('btnLabel').textContent='Selecciona un archivo primero';
+  wbProcesado=null;datosDespacho=null;
+}
+
+function procesar(){
+  if(!archivoBytes)return;
+  document.getElementById('spinner').style.display='block';
+  document.getElementById('btnLabel').textContent='Procesando...';
+  document.getElementById('btnGenerar').disabled=true;
+  setTimeout(()=>{
+    try{
+      const wb=XLSX.read(archivoBytes,{type:'arraybuffer'});
+      const resultado=generarDespacho(wb);
+      wbProcesado=resultado.wb;
+      datosDespacho=resultado.datos;
+      mostrarResumen(resultado);
+      document.getElementById('previewBox').classList.add('show');
+    }catch(e){
+      alert('Error: '+e.message+'\nVerifica que el archivo tenga las hojas Cotizacion, COST y MAT.');
+      console.error(e);
+    }
+    document.getElementById('spinner').style.display='none';
+    document.getElementById('btnLabel').textContent='Generar hoja DESPACHO';
+    document.getElementById('btnGenerar').disabled=false;
+  },100);
+}
+
+function limpiar(s){return String(s||'').trim().toLowerCase();}
+
+function matchPorModelo(modelo, lista){
+  const m=limpiar(modelo);
+  if(!m||m==='geo') return null;
+  return lista.find(e=>limpiar(e.modelo)===m)||null;
+}
+
+function generarDespacho(wb){
+  const alertas=[];
+  const wsCot=wb.Sheets['Cotización']||wb.Sheets['Cotizacion'];
+  const wsCost=wb.Sheets['COST'];
+  const wsMat=wb.Sheets['MAT'];
+  if(!wsCot||!wsCost||!wsMat) throw new Error('Faltan hojas: Cotizacion, COST o MAT');
+
+  const cotData=XLSX.utils.sheet_to_json(wsCot,{header:1,defval:null});
+  const costData=XLSX.utils.sheet_to_json(wsCost,{header:1,defval:null});
+  const matData=XLSX.utils.sheet_to_json(wsMat,{header:1,defval:null});
+
+  // Info cliente
+  let info={empresa:'',contacto:'',cotId:'',fecha:''};
+  for(const row of cotData){
+    if(row[0]==='Razón social de la empresa:') info.empresa=row[2]||'';
+    if(row[0]==='Nombre del contacto y correo:'){info.contacto=row[2]||'';info.cotId=String(row[5]||'');}
+    if(row[0]==='CLIENTE') info.fecha=row[5]?String(row[5]).slice(0,10):'';
+  }
+
+  // Equipos COST con cant > 0
+  let inCost=false;
+  const equiposCost=[];
+  for(const row of costData){
+    if(row[0]==='NO.'){inCost=true;continue;}
+    if(inCost&&row[3]&&String(row[3]).includes('RESUMEN')) break;
+    if(inCost&&row[3]&&row[7]&&Number(row[7])>0&&!String(row[3]).includes('MARGEN')){
+      equiposCost.push({marca:String(row[1]||'').trim(),modelo:String(row[2]||'').trim(),desc:String(row[3]).trim(),cant:Number(row[7])});
+    }
+  }
+
+  // Items cotización — separar equipos de mano de obra/materiales
+  let inItems=false;
+  const itemsEquipo=[], itemsOtros=[];
+  for(const row of cotData){
+    if(row[0]==='MARCA'){inItems=true;continue;}
+    if(inItems&&row[0]&&String(row[0]).includes('TÉRMINOS')) break;
+    if(inItems&&row[6]&&row[0]){
+      const marca=String(row[0]||'').trim();
+      const modelo=String(row[1]||'').trim();
+      const desc=String(row[2]||'').trim();
+      const cant=Number(row[5]||0);
+      const total=row[6];
+      const esEquipo=modelo&&modelo!==''&&modelo!==marca;
+      if(esEquipo){
+        itemsEquipo.push({marca,modelo,desc,cant,total});
+      } else {
+        itemsOtros.push({desc:marca,total});
+      }
+    }
+  }
+
+  // Materiales MAT con cant > 0
+  let inMat=false;
+  const materiales=[];
+  for(const row of matData){
+    if(row[1]==='DESCRIPCIÓNN'){inMat=true;continue;}
+    if(inMat&&row[1]==='Otros ') break;
+    if(inMat&&row[1]&&row[2]&&Number(row[2])>0&&!String(row[1]).includes('TERCERIZADO')&&!String(row[1]).includes('marginar')){
+      materiales.push({desc:String(row[1]),cant:Number(row[2]),medida:row[3]||''});
+    }
+  }
+
+  // Imprevistos
+  const nombresImp=['Alquiler de equipo (andamio)','Certificacion de altura','Equipo de seguridad',
+    'PUNTOS DE RED ADICIONALES CABLE Y M.O.','Compra de Imprevistos','Pruebas de Covid',
+    'COSTO TERCERIZADO','Obra civil (varia por tipo de proyecto)'];
+  let inOtros2=false;
+  const impMap={};
+  for(const row of matData){
+    if(row[1]==='Otros '){inOtros2=true;continue;}
+    if(inOtros2&&row[1]==='Para marginar TERCERIZADO') break;
+    if(inOtros2&&row[1]&&typeof row[1]==='string'&&row[4]!==undefined){
+      impMap[row[1].trim()]={desc:row[1].trim(),cant:row[2]||0,medida:row[3]||'Unidad',precioUnit:row[4]||0,total:row[6]||0};
+    }
+  }
+  for(const row of matData){
+    if(row[1]&&String(row[1]).includes('Obra civil')){
+      impMap[row[1].trim()]={desc:row[1].trim(),cant:row[2]||0,medida:row[3]||'Metro lineal',precioUnit:row[4]||0,total:row[6]||0};
+    }
+  }
+  const imprevistos=nombresImp.map(nombre=>{
+    const found=Object.values(impMap).find(v=>v.desc.toLowerCase().includes(nombre.toLowerCase().slice(0,12)));
+    return found||{desc:nombre,cant:0,medida:'Unidad',precioUnit:0,total:0};
+  });
+
+  // Match equipos cotizacion vs COST por modelo
+  let okCount=0,warnCount=0;
+  const equiposMatch=itemsEquipo.map((item,i)=>{
+    const match=matchPorModelo(item.modelo,equiposCost);
+    let alerta='',cantDespachar=0,alertaTipo='';
+    if(match){
+      if(match.cant===item.cant){
+        alerta='OK - Coincide'; cantDespachar=match.cant; alertaTipo='ok'; okCount++;
+      } else {
+        alerta=`DIFERENCIA: COT=${item.cant} COST=${match.cant}`; cantDespachar=match.cant; alertaTipo='warn'; warnCount++;
+        alertas.push({tipo:'rojo',msg:`${item.modelo}: cotizacion=${item.cant} vs costeo=${match.cant} — verificar`});
+      }
+    } else {
+      alerta='Solo en cotizacion'; cantDespachar=item.cant; alertaTipo='warn'; warnCount++;
+      alertas.push({tipo:'amarillo',msg:`${item.modelo} (${item.desc.slice(0,40)}) solo en cotizacion, no encontrado en COST`});
+    }
+    return {...item,cantCost:match?match.cant:'—',cantDespachar,alerta,alertaTipo};
+  });
+
+  // Equipos en COST no en cotizacion
+  const soloEnCost=equiposCost.filter(e=>!itemsEquipo.some(i=>limpiar(i.modelo)===limpiar(e.modelo)));
+  for(const e of soloEnCost){
+    warnCount++;
+    alertas.push({tipo:'rojo',msg:`${e.modelo} (${e.desc.slice(0,40)}) esta en COST (${e.cant} und) pero NO en cotizacion`});
+  }
+
+  // Construir AOA para hoja DESPACHO
+  const AOA=[];
+  AOA.push(['HOJA DE DESPACHO — GEOINFORMATICA S.A.','','','','','','','']);
+  AOA.push([`Cliente: ${info.empresa}`,'',`Cotizacion: ${info.cotId}`,'',`Fecha: ${info.fecha}`,'','','']);
+  AOA.push([]);
+  AOA.push(['SECCION 1 — EQUIPOS Y SERVICIOS','','','','','','','']);
+  AOA.push(['#','Marca','Modelo','Descripcion','Cant. Cotiz.','Cant. COST','Alerta','Total a Despachar']);
+
+  for(let i=0;i<equiposMatch.length;i++){
+    const e=equiposMatch[i];
+    AOA.push([i+1,e.marca,e.modelo,e.desc,e.cant,e.cantCost,e.alerta,e.cantDespachar||'']);
+  }
+  for(const e of soloEnCost){
+    AOA.push(['!!',e.marca,e.modelo,e.desc,'—',e.cant,'Solo en COST',e.cant]);
+  }
+
+  if(itemsOtros.length){
+    AOA.push([]);
+    AOA.push(['OTROS SERVICIOS (Mano de obra / Materiales en cotizacion)','','','','','','','']);
+    AOA.push(['#','Descripcion','','','','','Total Q','']);
+    for(let i=0;i<itemsOtros.length;i++){
+      AOA.push([i+1,itemsOtros[i].desc,'','','','',itemsOtros[i].total,'']);
+    }
+  }
+
+  AOA.push([]);
+  AOA.push(['SECCION 2 — MATERIALES A DESPACHAR','','','','','','','']);
+  AOA.push(['#','Medida','Descripcion','Cantidad','','Total a Despachar','Observaciones','']);
+  for(let i=0;i<materiales.length;i++){
+    const m=materiales[i];
+    AOA.push([i+1,m.medida,m.desc,m.cant,'','','','']);
+  }
+
+  AOA.push([]);
+  AOA.push(['SECCION 3 — IMPREVISTOS Y OTROS','','','','','','','']);
+  AOA.push(['#','Medida','Descripcion','Cantidad','Precio Unit. Q','Total Q','Observaciones','']);
+  for(let i=0;i<imprevistos.length;i++){
+    const imp=imprevistos[i];
+    AOA.push([i+1,imp.medida,imp.desc,imp.cant||'',imp.precioUnit||'',imp.total||'','','']);
+  }
+
+  AOA.push([]);
+  AOA.push(['SECCION 4 — AUTORIZACION Y FIRMA','','','','','','','']);
+  AOA.push(['Observaciones generales:','','','','','','','']);
+  AOA.push(['','','','','','','','']);
+  AOA.push(['','','','','','','','']);
+  AOA.push(['Preparado por:','','Aprobado por:','','Recibido por:','','','']);
+  AOA.push(['','','','','','','','']);
+  AOA.push(['Nombre y firma','','Nombre y firma','','Nombre y firma','','','']);
+  AOA.push(['Fecha: ___________','','Fecha: ___________','','Fecha: ___________','','','']);
+  AOA.push([]);
+  AOA.push(['NOTA: Amarillo = completar antes del despacho | Rojo = diferencia entre cotizacion y costeo, verificar','','','','','','','']);
+
+  const wsDesp=XLSX.utils.aoa_to_sheet(AOA);
+  wsDesp['!cols']=[{wch:4},{wch:14},{wch:16},{wch:38},{wch:12},{wch:12},{wch:22},{wch:16}];
+
+  if(wb.SheetNames.includes('DESPACHO')){
+    const idx=wb.SheetNames.indexOf('DESPACHO');
+    wb.SheetNames.splice(idx,1);
+    delete wb.Sheets['DESPACHO'];
+  }
+  wb.SheetNames.unshift('DESPACHO');
+  wb.Sheets['DESPACHO']=wsDesp;
+
+  return{wb,alertas,datos:{info,equiposMatch,soloEnCost,itemsOtros,materiales,imprevistos},okCount,warnCount,cantMat:materiales.length,cantImp:imprevistos.length};
+}
+
+function mostrarResumen(res){
+  document.getElementById('resOk').textContent=res.okCount;
+  document.getElementById('resWarn').textContent=res.warnCount;
+  document.getElementById('resMat').textContent=res.cantMat;
+  document.getElementById('resImp').textContent=res.cantImp;
+  const box=document.getElementById('alertasBox');
+  if(!res.alertas.length){
+    box.innerHTML='<div style="color:#15803d;font-size:13px;padding:8px">Todo OK - no hay diferencias entre cotizacion y costeo.</div>';
+  }else{
+    box.innerHTML=res.alertas.map(a=>`<div class="alerta-item ${a.tipo==='rojo'?'alerta-rojo':'alerta-amarillo'}"><span>${a.tipo==='rojo'?'(X)':'(!)'}</span><span>${a.msg}</span></div>`).join('');
+  }
+}
+
+function descargarExcel(){
+  if(!wbProcesado)return;
+  XLSX.writeFile(wbProcesado,nombreArchivo.replace(/\.xlsx?$/i,'')+'_con_Despacho.xlsx');
+}
+
+function descargarPDF(){
+  if(!datosDespacho)return;
+  const d=datosDespacho;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'letter'});
+  const AZ=[26,58,107],VD=[55,86,35],NAR=[226,107,10];
+  const AZC=[220,230,241],VDC=[198,239,206],NARC=[252,228,214];
+  const AM=[255,242,204],RJ=[255,199,206],GR=[242,242,242];
+  const TW=267; let y=10;
+
+  // Header
+  doc.setFillColor(...AZ);doc.rect(10,y,TW,9,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('HOJA DE DESPACHO - GEOINFORMATICA S.A.',TW/2+10,y+6,{align:'center'});y+=10;
+
+  doc.setFillColor(...AZC);doc.rect(10,y,TW,7,'F');
+  doc.setTextColor(0,0,0);doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text('Cliente: '+d.info.empresa,12,y+5);
+  doc.text('Cotizacion: '+d.info.cotId,TW/2+10,y+5);y+=8;
+  doc.setFillColor(...AZC);doc.rect(10,y,TW,7,'F');
+  doc.text('Contacto: '+d.info.contacto,12,y+5);
+  doc.text('Fecha: '+d.info.fecha,TW/2+10,y+5);y+=10;
+
+  // Seccion 1 - Equipos
+  doc.setFillColor(...AZ);doc.rect(10,y,TW,8,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('SECCION 1 - EQUIPOS Y SERVICIOS',TW/2+10,y+5.5,{align:'center'});y+=9;
+
+  const eq_head=[['#','Marca','Modelo','Descripcion','Cant.\nCotiz.','Cant.\nCOST','Alerta','Total a\nDespachar']];
+  const eq_body=[];
+  const eq_colors=[];
+  for(let i=0;i<d.equiposMatch.length;i++){
+    const e=d.equiposMatch[i];
+    eq_body.push([i+1,e.marca,e.modelo,e.desc,e.cant,e.cantCost,e.alerta,e.cantDespachar||'']);
+    if(e.alertaTipo==='ok') eq_colors.push({row:i+1,col:6,color:VDC});
+    else eq_colors.push({row:i+1,col:6,color:AM});
+  }
+  for(const e of d.soloEnCost){
+    eq_body.push(['!!',e.marca,e.modelo,e.desc,'—',e.cant,'Solo en COST',e.cant]);
+    eq_colors.push({row:eq_body.length,col:6,color:RJ});
+  }
+
+  doc.autoTable({
+    head:eq_head,body:eq_body,startY:y,margin:{left:10,right:10},
+    styles:{fontSize:7.5,cellPadding:2,valign:'middle'},
+    headStyles:{fillColor:AZ,textColor:[255,255,255],fontStyle:'bold'},
+    columnStyles:{0:{cellWidth:7},1:{cellWidth:18},2:{cellWidth:22},3:{cellWidth:80},4:{cellWidth:18},5:{cellWidth:18},6:{cellWidth:40},7:{cellWidth:22}},
+    didParseCell:(data)=>{
+      if(data.section==='body'){
+        const ec=eq_colors.find(c=>c.row===data.row.index+1&&c.col===data.column.index);
+        if(ec) data.cell.styles.fillColor=ec.color;
+        if(data.column.index===7) data.cell.styles.fillColor=AM;
+        if(data.row.index%2===0&&!ec&&data.column.index!==7) data.cell.styles.fillColor=GR;
+      }
+    }
+  });
+  y=doc.lastAutoTable.finalY+5;
+
+  // Otros servicios
+  if(d.itemsOtros&&d.itemsOtros.length){
+    if(y>170){doc.addPage('letter','landscape');y=10;}
+    doc.setFillColor(...[80,80,80]);doc.rect(10,y,TW,7,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('OTROS SERVICIOS (Mano de obra / Materiales)',TW/2+10,y+4.5,{align:'center'});y+=8;
+    const ot_head=[['#','Descripcion','Total Q']];
+    const ot_body=d.itemsOtros.map((o,i)=>[i+1,o.desc,o.total?`Q ${Number(o.total).toFixed(2)}`:'']);
+    doc.autoTable({head:ot_head,body:ot_body,startY:y,margin:{left:10,right:10},
+      styles:{fontSize:8,cellPadding:2,valign:'middle'},
+      headStyles:{fillColor:[80,80,80],textColor:[255,255,255],fontStyle:'bold'},
+      columnStyles:{0:{cellWidth:8},1:{cellWidth:220},2:{cellWidth:39}},
+      alternateRowStyles:{fillColor:GR}});
+    y=doc.lastAutoTable.finalY+5;
+  }
+
+  // Seccion 2 - Materiales
+  if(y>170){doc.addPage('letter','landscape');y=10;}
+  doc.setFillColor(...VD);doc.rect(10,y,TW,8,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('SECCION 2 - MATERIALES A DESPACHAR',TW/2+10,y+5.5,{align:'center'});y+=9;
+  const mat_head=[['#','Medida','Descripcion','Cantidad','Total a Despachar']];
+  const mat_body=d.materiales.map((m,i)=>[i+1,m.medida,m.desc,m.cant,'']);
+  doc.autoTable({head:mat_head,body:mat_body,startY:y,margin:{left:10,right:10},
+    styles:{fontSize:8,cellPadding:2,valign:'middle'},
+    headStyles:{fillColor:VD,textColor:[255,255,255],fontStyle:'bold'},
+    columnStyles:{0:{cellWidth:8},1:{cellWidth:22},2:{cellWidth:150},3:{cellWidth:20},4:{cellWidth:67}},
+    didParseCell:(data)=>{if(data.section==='body'&&data.column.index===4)data.cell.styles.fillColor=AM;},
+    alternateRowStyles:{fillColor:GR}});
+  y=doc.lastAutoTable.finalY+5;
+
+  // Seccion 3 - Imprevistos
+  if(y>170){doc.addPage('letter','landscape');y=10;}
+  doc.setFillColor(...NAR);doc.rect(10,y,TW,8,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('SECCION 3 - IMPREVISTOS Y OTROS',TW/2+10,y+5.5,{align:'center'});y+=9;
+  const imp_head=[['#','Descripcion','Medida','Cantidad','Precio Unit. Q','Total Q']];
+  const imp_body=d.imprevistos.map((imp,i)=>[i+1,imp.desc,imp.medida,imp.cant||'',imp.precioUnit?'Q '+Number(imp.precioUnit).toFixed(2):'',imp.total?'Q '+Number(imp.total).toFixed(2):'']);
+  doc.autoTable({head:imp_head,body:imp_body,startY:y,margin:{left:10,right:10},
+    styles:{fontSize:8,cellPadding:2,valign:'middle'},
+    headStyles:{fillColor:NAR,textColor:[255,255,255],fontStyle:'bold'},
+    columnStyles:{0:{cellWidth:8},1:{cellWidth:120},2:{cellWidth:22},3:{cellWidth:20},4:{cellWidth:47},5:{cellWidth:50}},
+    didParseCell:(data)=>{if(data.section==='body'&&data.column.index>=3)data.cell.styles.fillColor=AM;},
+    alternateRowStyles:{fillColor:GR}});
+  y=doc.lastAutoTable.finalY+6;
+
+  // Seccion 4 - Firmas
+  if(y>170){doc.addPage('letter','landscape');y=10;}
+  doc.setFillColor(...AZ);doc.rect(10,y,TW,8,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+  doc.text('SECCION 4 - AUTORIZACION Y FIRMA',TW/2+10,y+5.5,{align:'center'});y+=9;
+  doc.setFillColor(...AZC);doc.rect(10,y,TW,7,'F');
+  doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(9);
+  doc.text('Observaciones generales del despacho:',12,y+5);y+=8;
+  doc.setDrawColor(200);doc.rect(10,y,TW,14);y+=16;
+  const firma_data=[
+    [{content:'Preparado por:',styles:{fillColor:AZC,fontStyle:'bold'}},{content:'Aprobado por:',styles:{fillColor:AZC,fontStyle:'bold'}},{content:'Recibido por:',styles:{fillColor:AZC,fontStyle:'bold'}}],
+    ['','',''],
+    [{content:'Nombre y firma',styles:{fillColor:GR}},{content:'Nombre y firma',styles:{fillColor:GR}},{content:'Nombre y firma',styles:{fillColor:GR}}],
+    ['Fecha: ___________','Fecha: ___________','Fecha: ___________'],
+  ];
+  doc.autoTable({body:firma_data,startY:y,margin:{left:10,right:10},
+    styles:{fontSize:9,cellPadding:5,valign:'middle',halign:'center'},
+    columnStyles:{0:{cellWidth:TW/3},1:{cellWidth:TW/3},2:{cellWidth:TW/3}}});
+  y=doc.lastAutoTable.finalY+4;
+  doc.setFontSize(7);doc.setTextColor(120);
+  doc.text('NOTA: Amarillo = completar antes del despacho | Rojo = diferencia entre cotizacion y costeo, verificar',10,y+4);
+
+  doc.save(nombreArchivo.replace(/\.xlsx?$/i,'')+'_Hoja_Despacho.pdf');
+}
+</script>
+</body>
+</html>
