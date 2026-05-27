@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finiquito Digital — GEO</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="config.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f7f4;--card:#fff;--text:#1c1c1a;--text2:#5a5a57;--text3:#9a9894;
+  --border:#e5e3df;--border2:#ccc9c4;
+  --azul:#1a3a6b;--azul2:#dce6f1;
+  --verde:#166534;--verde2:#dcfce7;
+  --rojo:#991b1b;--rojo2:#fee2e2;
+  --naranja:#9a3412;--naranja2:#ffedd5;
+  --amarillo2:#fef9c3;
+  --radius:10px;--radius-lg:14px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:780px;margin:0 auto;padding:20px 16px}
+
+/* Header */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.top-bar h1{font-size:20px;font-weight:700;color:var(--azul)}
+.top-bar p{font-size:12px;color:var(--text3);margin-top:2px}
+.badge{background:var(--azul);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;letter-spacing:.05em}
+
+/* Modo selector */
+.modo-tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.modo-btn{padding:16px;border:2px solid var(--border2);border-radius:var(--radius-lg);background:var(--card);cursor:pointer;text-align:left;transition:all .2s}
+.modo-btn:hover{border-color:var(--azul);background:var(--azul2)}
+.modo-btn.active{border-color:var(--azul);background:var(--azul);color:#fff}
+.modo-btn.active .modo-icon{background:rgba(255,255,255,.2)}
+.modo-btn.active .modo-sub{color:rgba(255,255,255,.7)}
+.modo-icon{width:36px;height:36px;border-radius:8px;background:var(--azul2);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:8px}
+.modo-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.modo-sub{font-size:12px;color:var(--text2)}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:14px}
+.card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title span{background:var(--azul);color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+
+/* Forms */
+label{display:block;font-size:13px;color:var(--text2);margin-bottom:4px;margin-top:12px}
+label:first-of-type{margin-top:0}
+input,select,textarea{width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px;font-size:14px;font-family:inherit;background:var(--card);color:var(--text);outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--azul)}
+textarea{resize:vertical;min-height:56px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* Items tabla */
+.items-header{display:grid;gap:8px;padding:0 2px;margin-bottom:6px}
+.items-header.eq{grid-template-columns:2.5fr 1fr 1fr 1fr 36px}
+.items-header.mat{grid-template-columns:2.5fr 80px 1fr 1fr 36px}
+.col-lbl{font-size:11px;color:var(--text3);font-weight:600}
+.item-row{display:grid;gap:8px;align-items:center;margin-bottom:8px}
+.item-row.eq{grid-template-columns:2.5fr 1fr 1fr 1fr 36px}
+.item-row.mat{grid-template-columns:2.5fr 80px 1fr 1fr 36px}
+.item-row input{margin:0}
+.btn-remove{background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:20px;width:36px;text-align:center;padding:0}
+.btn-remove:hover{color:var(--rojo)}
+.btn-add{width:100%;padding:9px;border:1px dashed var(--border2);border-radius:var(--radius);background:transparent;cursor:pointer;font-size:13px;color:var(--text2);margin-top:4px;transition:background .15s}
+.btn-add:hover{background:var(--bg)}
+
+/* Buttons */
+.btn-primary{width:100%;padding:13px;border:none;border-radius:var(--radius);background:var(--azul);color:#fff;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-success{background:var(--verde)}
+.btn-danger{background:#c0392b}
+.btn-row{display:flex;gap:10px}
+.btn-sm{flex:1;padding:11px;border:none;border-radius:var(--radius);color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.btn-sm:hover{opacity:.9}
+
+/* Estado badges */
+.estado{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.e-ok{background:var(--verde2);color:var(--verde)}
+.e-falt{background:var(--rojo2);color:var(--rojo)}
+.e-exc{background:var(--amarillo2);color:#713f12}
+
+/* Tabla finiquito */
+.tabla-fin{width:100%;border-collapse:collapse;font-size:13px}
+.tabla-fin th{background:var(--azul);color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.04em}
+.tabla-fin td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tabla-fin tr:last-child td{border:none}
+.tabla-fin tr:hover td{background:var(--bg)}
+.dif-neg{color:var(--rojo);font-weight:700}
+.dif-pos{color:#0369a1;font-weight:700}
+
+/* Spinner */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c1c1a;color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:13px;z-index:999;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2)}
+.toast.show{display:block}
+
+/* Proyecto selector */
+.proj-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;transition:border-color .15s}
+.proj-card:hover{border-color:var(--azul)}
+.proj-name{font-weight:600;font-size:14px}
+.proj-meta{font-size:12px;color:var(--text2);margin-top:3px}
+.proj-estado{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.pe-pend{background:var(--amarillo2);color:#713f12}
+.pe-comp{background:var(--verde2);color:var(--verde)}
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:14px}
+
+/* Resumen cruce */
+.resumen-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.res-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px;text-align:center}
+.res-num{font-size:24px;font-weight:700}
+.res-lbl{font-size:11px;color:var(--text2);margin-top:3px}
+.r-ok .res-num{color:var(--verde)}
+.r-falt .res-num{color:var(--rojo)}
+.r-exc .res-num{color:#0369a1}
+.r-ext .res-num{color:var(--naranja)}
+
+@media(max-width:500px){
+  .row2,.row3{grid-template-columns:1fr}
+  .resumen-grid{grid-template-columns:1fr 1fr}
+  .items-header.eq,.item-row.eq{grid-template-columns:2fr 1fr 1fr 36px}
+  .items-header.mat,.item-row.mat{grid-template-columns:2fr 60px 1fr 36px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top-bar">
+    <div>
+      <h1>Finiquito Digital</h1>
+      <p>GEOINFORMATICA S.A. — Control de cierre de proyectos</p>
+    </div>
+    <span class="badge">GEO</span>
+  </div>
+
+  <!-- Selector de modo -->
+  <div class="modo-tabs" id="modoTabs">
+    <button class="modo-btn active" onclick="setModo('tecnico',this)">
+      <div class="modo-icon">🔧</div>
+      <div class="modo-title">Técnico</div>
+      <div class="modo-sub">Reportar lo instalado y devuelto</div>
+    </button>
+    <button class="modo-btn" onclick="setModo('admin',this)">
+      <div class="modo-icon">📊</div>
+      <div class="modo-title">Administrador</div>
+      <div class="modo-sub">Revisar y generar finiquito</div>
+    </button>
+  </div>
+
+  <div id="vistaContenido"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const {jsPDF}=window.jspdf;
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let modoActual='tecnico';
+let proyectoSeleccionado=null;
+
+function setModo(modo,btn){
+  modoActual=modo;
+  document.querySelectorAll('.modo-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderVista();
+}
+
+function toast(msg,dur=3000){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+async function renderVista(){
+  const el=document.getElementById('vistaContenido');
+  if(modoActual==='tecnico') el.innerHTML=renderTecnico();
+  else await renderAdmin();
+}
+
+// ============================================================
+// VISTA TÉCNICO
+// ============================================================
+function renderTecnico(){
+  return `
+  <div class="card">
+    <div class="card-title"><span>1</span>Datos del proyecto</div>
+    <label>Nombre del proyecto</label>
+    <input id="t_proyecto" placeholder="Ej. DHL Villa Nueva, Torre Fuego...">
+    <div class="row2">
+      <div>
+        <label>Código Bitrix</label>
+        <input id="t_bitrix" placeholder="Ej. DM-DHL-4304">
+      </div>
+      <div>
+        <label>Fecha</label>
+        <input type="date" id="t_fecha" value="${new Date().toISOString().slice(0,10)}">
+      </div>
+    </div>
+    <label>Técnico(s)</label>
+    <input id="t_tecnicos" placeholder="Nombres de los técnicos">
+    <label>Tipo de boleta</label>
+    <select id="t_tipo">
+      <option value="instalacion">Reporte de instalación</option>
+      <option value="devolucion">Devolución de materiales/equipos</option>
+      <option value="ambos">Instalación + Devolución</option>
+    </select>
+  </div>
+
+  <div id="secInstalado">
+  <div class="card">
+    <div class="card-title"><span>2</span>Equipos instalados</div>
+    <div class="items-header eq">
+      <span class="col-lbl">Descripción del equipo</span>
+      <span class="col-lbl">N° Serie</span>
+      <span class="col-lbl">Cant. instalada</span>
+      <span class="col-lbl">Observaciones</span>
+      <span></span>
+    </div>
+    <div id="t_equipos"></div>
+    <button class="btn-add" onclick="addItemTec('t_equipos','eq')">+ Agregar equipo</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>3</span>Materiales utilizados</div>
+    <div class="items-header mat">
+      <span class="col-lbl">Descripción</span>
+      <span class="col-lbl">Unidad</span>
+      <span class="col-lbl">Cant. utilizada</span>
+      <span class="col-lbl">Observaciones</span>
+      <span></span>
+    </div>
+    <div id="t_materiales"></div>
+    <button class="btn-add" onclick="addItemTec('t_materiales','mat')">+ Agregar material</button>
+  </div>
+  </div>
+
+  <div id="secDevolucion" style="display:none">
+  <div class="card">
+    <div class="card-title"><span>4</span>Equipos/materiales devueltos a bodega</div>
+    <div class="items-header mat">
+      <span class="col-lbl">Descripción</span>
+      <span class="col-lbl">Unidad/Medida</span>
+      <span class="col-lbl">Cantidad devuelta</span>
+      <span class="col-lbl">Observaciones</span>
+      <span></span>
+    </div>
+    <div id="t_devueltos"></div>
+    <button class="btn-add" onclick="addItemTec('t_devueltos','mat')">+ Agregar devolución</button>
+  </div>
+  </div>
+
+  <div id="secExtras" style="display:none">
+  <div class="card">
+    <div class="card-title"><span>5</span>Compras extras de viáticos (no despachadas por bodega)</div>
+    <div class="items-header mat">
+      <span class="col-lbl">Descripción</span>
+      <span class="col-lbl">Unidad</span>
+      <span class="col-lbl">Cantidad</span>
+      <span class="col-lbl">Observaciones</span>
+      <span></span>
+    </div>
+    <div id="t_extras"></div>
+    <button class="btn-add" onclick="addItemTec('t_extras','mat')">+ Agregar compra extra</button>
+  </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span>✓</span>Observaciones generales</div>
+    <textarea id="t_obs" placeholder="Notas, incidencias, trabajo pendiente..."></textarea>
+  </div>
+
+  <button class="btn-primary btn-success" onclick="enviarReporte()">
+    <div class="spinner" id="t_spinner"></div>
+    <span id="t_btnlbl">Enviar reporte</span>
+  </button>`;
+}
+
+document.getElementById('vistaContenido').innerHTML=renderTecnico();
+// Agregar items iniciales después de render
+setTimeout(()=>{
+  addItemTec('t_equipos','eq');
+  addItemTec('t_materiales','mat');
+  addItemTec('t_devueltos','mat');
+  addItemTec('t_extras','mat');
+  // Manejar cambio de tipo
+  document.getElementById('t_tipo')?.addEventListener('change',()=>{
+    const v=document.getElementById('t_tipo').value;
+    document.getElementById('secInstalado').style.display=v==='devolucion'?'none':'';
+    document.getElementById('secDevolucion').style.display=v==='instalacion'?'none':'';
+    document.getElementById('secExtras').style.display=v==='devolucion'?'none':'';
+  });
+},50);
+
+function addItemTec(containerId,tipo){
+  const d=document.createElement('div');
+  d.className=`item-row ${tipo}`;
+  if(tipo==='eq'){
+    d.innerHTML=`<input placeholder="Descripción del equipo">
+      <input placeholder="N° serie o código">
+      <input type="number" value="1" min="0">
+      <input placeholder="Obs.">
+      <button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
+  } else {
+    d.innerHTML=`<input placeholder="Descripción">
+      <input placeholder="und/m/kg">
+      <input type="number" value="1" min="0">
+      <input placeholder="Obs.">
+      <button class="btn-remove" onclick="this.parentElement.remove()">×</button>`;
+  }
+  document.getElementById(containerId)?.appendChild(d);
+}
+
+function getItemsTec(containerId,tipo){
+  return [...document.querySelectorAll(`#${containerId} .item-row`)].map(r=>{
+    const inputs=[...r.querySelectorAll('input')];
+    if(tipo==='eq') return{desc:inputs[0].value.trim(),serie:inputs[1].value.trim(),cant:Number(inputs[2].value)||0,obs:inputs[3].value.trim()};
+    return{desc:inputs[0].value.trim(),unidad:inputs[1].value.trim()||'und',cant:Number(inputs[2].value)||0,obs:inputs[3].value.trim()};
+  }).filter(i=>i.desc);
+}
+
+async function enviarReporte(){
+  const proyecto=document.getElementById('t_proyecto').value.trim();
+  const tecnicos=document.getElementById('t_tecnicos').value.trim();
+  if(!proyecto||!tecnicos){toast('⚠ Completá proyecto y técnicos');return;}
+
+  const btn=document.getElementById('t_btnlbl');
+  document.getElementById('t_spinner').style.display='block';
+  btn.textContent='Guardando...';
+
+  const tipo=document.getElementById('t_tipo').value;
+  const reporte={
+    proyecto, tecnicos,
+    bitrix:document.getElementById('t_bitrix').value.trim(),
+    fecha:document.getElementById('t_fecha').value,
+    tipo,
+    equipos:JSON.stringify(getItemsTec('t_equipos','eq')),
+    materiales:JSON.stringify(getItemsTec('t_materiales','mat')),
+    devueltos:JSON.stringify(getItemsTec('t_devueltos','mat')),
+    extras:JSON.stringify(getItemsTec('t_extras','mat')),
+    observaciones:document.getElementById('t_obs').value.trim(),
+    estado:'pendiente',
+    creado_en:new Date().toISOString()
+  };
+
+  const{error}=await sb.from('finiquitos').insert([reporte]);
+  document.getElementById('t_spinner').style.display='none';
+  btn.textContent='Enviar reporte';
+  if(error){toast('❌ Error al guardar: '+error.message);console.error(error);return;}
+  toast('✅ Reporte enviado correctamente',4000);
+  // Limpiar formulario
+  document.getElementById('vistaContenido').innerHTML=renderTecnico();
+  setTimeout(()=>{
+    addItemTec('t_equipos','eq');addItemTec('t_materiales','mat');
+    addItemTec('t_devueltos','mat');addItemTec('t_extras','mat');
+    document.getElementById('t_tipo')?.addEventListener('change',()=>{
+      const v=document.getElementById('t_tipo').value;
+      document.getElementById('secInstalado').style.display=v==='devolucion'?'none':'';
+      document.getElementById('secDevolucion').style.display=v==='instalacion'?'none':'';
+      document.getElementById('secExtras').style.display=v==='devolucion'?'none':'';
+    });
+  },50);
+}
+
+// ============================================================
+// VISTA ADMIN
+// ============================================================
+async function renderAdmin(){
+  const el=document.getElementById('vistaContenido');
+  el.innerHTML=`<div class="empty">Cargando proyectos...</div>`;
+  const{data,error}=await sb.from('finiquitos').select('*').order('creado_en',{ascending:false});
+  if(error){el.innerHTML=`<div class="empty">Error al cargar datos</div>`;return;}
+
+  // Agrupar por proyecto
+  const proyectos={};
+  for(const r of data||[]){
+    if(!proyectos[r.proyecto]) proyectos[r.proyecto]={reportes:[],proyecto:r.proyecto,bitrix:r.bitrix,fecha:r.fecha};
+    proyectos[r.proyecto].reportes.push(r);
+  }
+
+  if(!Object.keys(proyectos).length){
+    el.innerHTML=`<div class="card"><div class="empty">No hay reportes aún.<br><small>Los técnicos deben enviar su reporte primero.</small></div></div>`;
+    return;
+  }
+
+  let html=`<div class="card"><div class="card-title">Proyectos con reporte</div>`;
+  for(const[nombre,proj] of Object.entries(proyectos)){
+    const cant=proj.reportes.length;
+    const cerrado=proj.reportes.some(r=>r.estado==='cerrado');
+    html+=`<div class="proj-card" onclick="abrirProyecto('${nombre.replace(/'/g,"\\'")}')">
+      <div>
+        <div class="proj-name">${nombre}</div>
+        <div class="proj-meta">${proj.bitrix||''} &nbsp;·&nbsp; ${cant} boleta${cant>1?'s':''} &nbsp;·&nbsp; ${proj.fecha||''}</div>
+      </div>
+      <span class="proj-estado ${cerrado?'pe-comp':'pe-pend'}">${cerrado?'Cerrado':'Pendiente'}</span>
+    </div>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+async function abrirProyecto(nombre){
+  const el=document.getElementById('vistaContenido');
+  el.innerHTML=`<div class="empty">Cargando...</div>`;
+
+  const{data}=await sb.from('finiquitos').select('*').eq('proyecto',nombre).order('creado_en',{ascending:true});
+  if(!data||!data.length){el.innerHTML=`<div class="empty">Sin datos</div>`;return;}
+
+  proyectoSeleccionado={nombre,reportes:data};
+
+  // Consolidar todos los reportes
+  const equipos=[],materiales=[],devueltos=[],extras=[];
+  for(const r of data){
+    try{JSON.parse(r.equipos||'[]').forEach(e=>{if(e.desc)equipos.push({...e,tecnico:r.tecnicos,fecha:r.fecha})});}catch(e){}
+    try{JSON.parse(r.materiales||'[]').forEach(e=>{if(e.desc)materiales.push({...e,tecnico:r.tecnicos,fecha:r.fecha})});}catch(e){}
+    try{JSON.parse(r.devueltos||'[]').forEach(e=>{if(e.desc)devueltos.push({...e,tecnico:r.tecnicos,fecha:r.fecha})});}catch(e){}
+    try{JSON.parse(r.extras||'[]').forEach(e=>{if(e.desc)extras.push({...e,tecnico:r.tecnicos,fecha:r.fecha})});}catch(e){}
+  }
+
+  proyectoSeleccionado.consolidado={equipos,materiales,devueltos,extras};
+
+  // Calcular resumen
+  const totalEq=equipos.reduce((s,e)=>s+e.cant,0);
+  const totalMat=materiales.reduce((s,m)=>s+m.cant,0);
+  const totalDev=devueltos.reduce((s,d)=>s+d.cant,0);
+  const totalExt=extras.reduce((s,e)=>s+e.cant,0);
+
+  const info=data[0];
+
+  let html=`
+  <button onclick="renderAdmin()" style="background:none;border:none;cursor:pointer;color:var(--azul);font-size:13px;margin-bottom:16px;display:flex;align-items:center;gap:4px">← Volver a proyectos</button>
+
+  <div class="card">
+    <div class="card-title">Proyecto: ${nombre}</div>
+    <div class="row2">
+      <div><label>Código Bitrix</label><input value="${info.bitrix||''}" id="a_bitrix"></div>
+      <div><label>Fecha cierre</label><input type="date" id="a_fecha" value="${info.fecha||new Date().toISOString().slice(0,10)}"></div>
+    </div>
+    <label>Técnico(s)</label>
+    <input value="${info.tecnicos||''}" id="a_tecnicos">
+    <label>Observaciones generales</label>
+    <textarea id="a_obs">${data.map(r=>r.observaciones).filter(Boolean).join(' | ')}</textarea>
+  </div>
+
+  <div class="resumen-grid">
+    <div class="res-box r-ok"><div class="res-num">${totalEq}</div><div class="res-lbl">Equipos instalados</div></div>
+    <div class="res-box r-ok"><div class="res-num">${totalMat}</div><div class="res-lbl">Materiales usados</div></div>
+    <div class="res-box r-falt"><div class="res-num">${totalDev}</div><div class="res-lbl">Devueltos a bodega</div></div>
+    <div class="res-box r-ext"><div class="res-num">${totalExt}</div><div class="res-lbl">Extras de viáticos</div></div>
+  </div>`;
+
+  // Tabla equipos
+  if(equipos.length){
+    html+=`<div class="card">
+      <div class="card-title"><span>1</span>Equipos instalados</div>
+      <table class="tabla-fin">
+        <thead><tr><th>#</th><th>Descripción</th><th>N° Serie</th><th>Cant.</th><th>Técnico</th><th>Observaciones</th></tr></thead>
+        <tbody>${equipos.map((e,i)=>`<tr><td>${i+1}</td><td>${e.desc}</td><td>${e.serie||'—'}</td><td><b>${e.cant}</b></td><td>${e.tecnico}</td><td>${e.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  // Tabla materiales
+  if(materiales.length){
+    html+=`<div class="card">
+      <div class="card-title"><span>2</span>Materiales utilizados</div>
+      <table class="tabla-fin">
+        <thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cant.</th><th>Técnico</th><th>Observaciones</th></tr></thead>
+        <tbody>${materiales.map((m,i)=>`<tr><td>${i+1}</td><td>${m.desc}</td><td>${m.unidad||'und'}</td><td><b>${m.cant}</b></td><td>${m.tecnico}</td><td>${m.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  // Tabla devueltos
+  if(devueltos.length){
+    html+=`<div class="card">
+      <div class="card-title"><span>3</span>Devuelto a bodega</div>
+      <table class="tabla-fin">
+        <thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cant.</th><th>Técnico</th><th>Observaciones</th></tr></thead>
+        <tbody>${devueltos.map((d,i)=>`<tr><td>${i+1}</td><td>${d.desc}</td><td>${d.unidad||'und'}</td><td><b>${d.cant}</b></td><td>${d.tecnico}</td><td>${d.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  // Extras
+  if(extras.length){
+    html+=`<div class="card">
+      <div class="card-title"><span>4</span>Compras extras de viáticos</div>
+      <table class="tabla-fin">
+        <thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cant.</th><th>Técnico</th><th>Observaciones</th></tr></thead>
+        <tbody>${extras.map((e,i)=>`<tr><td>${i+1}</td><td>${e.desc}</td><td>${e.unidad||'und'}</td><td><b>${e.cant}</b></td><td>${e.tecnico}</td><td>${e.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+  }
+
+  html+=`
+  <div class="btn-row">
+    <button class="btn-sm btn-success" onclick="generarPDF()">Generar Finiquito PDF</button>
+    <button class="btn-sm" style="background:var(--azul)" onclick="cerrarProyecto()">Marcar como cerrado</button>
+  </div>`;
+
+  el.innerHTML=html;
+}
+
+async function cerrarProyecto(){
+  if(!proyectoSeleccionado)return;
+  const{error}=await sb.from('finiquitos').update({estado:'cerrado'}).eq('proyecto',proyectoSeleccionado.nombre);
+  if(error){toast('❌ Error: '+error.message);return;}
+  toast('✅ Proyecto marcado como cerrado');
+  renderAdmin();
+}
+
+function generarPDF(){
+  if(!proyectoSeleccionado)return;
+  const d=proyectoSeleccionado.consolidado;
+  const nombre=proyectoSeleccionado.nombre;
+  const bitrix=document.getElementById('a_bitrix')?.value||'';
+  const fecha=document.getElementById('a_fecha')?.value||'';
+  const tecnicos=document.getElementById('a_tecnicos')?.value||'';
+  const obs=document.getElementById('a_obs')?.value||'';
+  const info=proyectoSeleccionado.reportes[0];
+
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
+  const TW=180; let y=15;
+  const AZ=[26,58,107],AZC=[220,230,241],VD=[22,101,52],VDC=[220,252,231];
+  const NAR=[154,52,18],GR=[242,242,242];
+
+  // Logo/Header
+  doc.setFillColor(...AZ);doc.rect(15,y,TW,12,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('FINIQUITO DE MATERIALES Y EQUIPOS',TW/2+15,y+8,{align:'center'});
+  y+=14;
+
+  // Info proyecto
+  doc.setFillColor(...AZC);doc.rect(15,y,TW,7,'F');
+  doc.setTextColor(0);doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text(`Proyecto: ${nombre}`,17,y+5);
+  doc.text(`Código Bitrix: ${bitrix}`,TW/2+15,y+5);y+=8;
+  doc.setFillColor(...AZC);doc.rect(15,y,TW,7,'F');
+  doc.text(`Tecnicos: ${tecnicos}`,17,y+5);
+  doc.text(`Fecha: ${fecha}`,TW/2+15,y+5);y+=10;
+
+  // Equipos
+  if(d.equipos.length){
+    doc.setFillColor(...AZ);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('EQUIPOS INSTALADOS',TW/2+15,y+4.5,{align:'center'});y+=8;
+    doc.autoTable({
+      head:[['#','Descripción del Equipo','N° Serie','Cant.','Técnico','Obs.']],
+      body:d.equipos.map((e,i)=>[i+1,e.desc,e.serie||'—',e.cant,e.tecnico,e.obs||'']),
+      startY:y,margin:{left:15,right:15},
+      styles:{fontSize:8,cellPadding:2,valign:'middle'},
+      headStyles:{fillColor:AZ,textColor:[255,255,255],fontStyle:'bold'},
+      columnStyles:{0:{cellWidth:8},1:{cellWidth:65},2:{cellWidth:25},3:{cellWidth:12},4:{cellWidth:35},5:{cellWidth:35}},
+      alternateRowStyles:{fillColor:GR}
+    });
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // Materiales
+  if(d.materiales.length){
+    if(y>220){doc.addPage();y=15;}
+    doc.setFillColor(...VD);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('MATERIALES UTILIZADOS',TW/2+15,y+4.5,{align:'center'});y+=8;
+    doc.autoTable({
+      head:[['#','Descripción','Unidad','Cant.','Técnico','Obs.']],
+      body:d.materiales.map((m,i)=>[i+1,m.desc,m.unidad||'und',m.cant,m.tecnico,m.obs||'']),
+      startY:y,margin:{left:15,right:15},
+      styles:{fontSize:8,cellPadding:2,valign:'middle'},
+      headStyles:{fillColor:VD,textColor:[255,255,255],fontStyle:'bold'},
+      columnStyles:{0:{cellWidth:8},1:{cellWidth:65},2:{cellWidth:20},3:{cellWidth:12},4:{cellWidth:35},5:{cellWidth:40}},
+      alternateRowStyles:{fillColor:GR}
+    });
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // Devueltos
+  if(d.devueltos.length){
+    if(y>220){doc.addPage();y=15;}
+    doc.setFillColor(100,100,100);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('DEVUELTO A BODEGA',TW/2+15,y+4.5,{align:'center'});y+=8;
+    doc.autoTable({
+      head:[['#','Descripción','Unidad','Cant. devuelta','Técnico','Obs.']],
+      body:d.devueltos.map((dv,i)=>[i+1,dv.desc,dv.unidad||'und',dv.cant,dv.tecnico,dv.obs||'']),
+      startY:y,margin:{left:15,right:15},
+      styles:{fontSize:8,cellPadding:2,valign:'middle'},
+      headStyles:{fillColor:[100,100,100],textColor:[255,255,255],fontStyle:'bold'},
+      columnStyles:{0:{cellWidth:8},1:{cellWidth:65},2:{cellWidth:20},3:{cellWidth:25},4:{cellWidth:32},5:{cellWidth:30}},
+      alternateRowStyles:{fillColor:GR}
+    });
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // Extras viáticos
+  if(d.extras.length){
+    if(y>220){doc.addPage();y=15;}
+    doc.setFillColor(...NAR);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('COMPRAS EXTRAS DE VIATICOS',TW/2+15,y+4.5,{align:'center'});y+=8;
+    doc.autoTable({
+      head:[['#','Descripción','Unidad','Cant.','Técnico','Obs.']],
+      body:d.extras.map((e,i)=>[i+1,e.desc,e.unidad||'und',e.cant,e.tecnico,e.obs||'']),
+      startY:y,margin:{left:15,right:15},
+      styles:{fontSize:8,cellPadding:2,valign:'middle'},
+      headStyles:{fillColor:NAR,textColor:[255,255,255],fontStyle:'bold'},
+      columnStyles:{0:{cellWidth:8},1:{cellWidth:65},2:{cellWidth:20},3:{cellWidth:12},4:{cellWidth:35},5:{cellWidth:40}},
+      alternateRowStyles:{fillColor:GR}
+    });
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // Observaciones
+  if(obs){
+    if(y>230){doc.addPage();y=15;}
+    doc.setFillColor(...AZC);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('OBSERVACIONES GENERALES',17,y+5);y+=8;
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    const lines=doc.splitTextToSize(obs,TW-4);
+    doc.text(lines,17,y+4);y+=lines.length*5+8;
+  }
+
+  // Firmas
+  if(y>230){doc.addPage();y=15;}
+  doc.setFillColor(...AZ);doc.rect(15,y,TW,7,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+  doc.text('FIRMAS Y CONFORMIDAD',TW/2+15,y+4.5,{align:'center'});y+=9;
+
+  doc.autoTable({
+    body:[
+      [{content:'Entregado por:',styles:{fillColor:AZC,fontStyle:'bold'}},{content:'Recibido por (Operaciones):',styles:{fillColor:AZC,fontStyle:'bold'}}],
+      ['',''],
+      [{content:'Nombre: Cristobal del Cid',styles:{fillColor:GR}},{content:'Nombre:',styles:{fillColor:GR}}],
+      [{content:'Cargo: Almacen / Compras',styles:{fillColor:GR}},{content:'Cargo:',styles:{fillColor:GR}}],
+      ['Fecha / Firma: _______________','Fecha / Firma: _______________'],
+    ],
+    startY:y,margin:{left:15,right:15},
+    styles:{fontSize:9,cellPadding:5,valign:'middle',halign:'center'},
+    columnStyles:{0:{cellWidth:TW/2},1:{cellWidth:TW/2}}
+  });
+  y=doc.lastAutoTable.finalY+4;
+  doc.setFontSize(7);doc.setTextColor(120);
+  doc.text('Documento oficial de finiquito — GEOINFORMATICA S.A. — conservar como respaldo del proyecto',15,y+4);
+
+  doc.save(`Finiquito_${nombre.replace(/\s+/g,'_')}_${fecha}.pdf`);
+  toast('✅ Finiquito PDF generado');
+}
+
+// Init
+renderVista();
+</script>
+</body>
+</html>
