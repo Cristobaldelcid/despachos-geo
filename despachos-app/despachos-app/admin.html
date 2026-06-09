@@ -7,18 +7,17 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#ebebea;
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#ebebea;
   --text:#1a1a19;--text2:#5a5a57;--text3:#9a9894;
   --border:#e0dedd;--border2:#c8c7c4;
-  --radius:8px;--radius-lg:12px;
-  --ok-bg:#eaf3de;--ok-text:#27500a;--ok-border:#6ee7b7;
+  --ok-bg:#eaf3de;--ok-text:#27500a;
   --warn-bg:#faeeda;--warn-text:#633806;
   --info-bg:#e6f1fb;--info-text:#0c447c;
-  --danger-bg:#fcebeb;--danger-text:#791f1f;
+  --radius:8px;--radius-lg:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:var(--text);background:var(--bg3);min-height:100vh}
-.app{max-width:900px;margin:0 auto;padding:16px}
-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:gap}
+.app{max-width:1000px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
 .header-left h1{font-size:19px;font-weight:700}
 .header-left p{font-size:12px;color:var(--text3);margin-top:2px}
 .badge-geo{background:#1a3a6b;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px}
@@ -30,11 +29,10 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .stat-apro .stat-num{color:#15803d}
 .stat-desp .stat-num{color:#185FA5}
 .stat-total .stat-num{color:var(--text)}
-.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.filter-btn{padding:7px 14px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:7px 14px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);cursor:pointer;font-size:13px;color:var(--text2)}
 .filter-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
-.btn-export{padding:7px 16px;border:none;border-radius:var(--radius);background:#15803d;color:#fff;font-size:13px;font-weight:500;cursor:pointer;margin-left:auto}
-.btn-export:hover{background:#166534}
+.btn-export{padding:8px 16px;border:none;border-radius:var(--radius);background:#15803d;color:#fff;font-size:13px;font-weight:500;cursor:pointer;margin-left:auto}
 .btn-refresh{padding:7px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);cursor:pointer;font-size:13px;color:var(--text2)}
 table{width:100%;border-collapse:collapse;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;font-size:13px}
 thead tr{background:var(--bg2);border-bottom:1px solid var(--border)}
@@ -46,21 +44,23 @@ tr:hover td{background:var(--bg2)}
 .b-pend{background:var(--warn-bg);color:var(--warn-text)}
 .b-apro{background:var(--ok-bg);color:var(--ok-text)}
 .b-desp{background:var(--info-bg);color:var(--info-text)}
-.b-proy{background:#fef3e2;color:#92400e;border:1px solid #f59e0b}
-.b-devuelta{background:#f3e8ff;color:#6b21a8}
-.fila-vencida td{background:#fff1f1!important}
-.fila-vencida td:first-child{border-left:3px solid #dc2626}
-.badge-vencida{display:inline-block;background:#dc2626;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle}
-.btn-dev{background:#f3e8ff;color:#6b21a8}
-.btn-action{padding:5px 10px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;margin-right:4px;transition:opacity .15s}
-.btn-action:hover{opacity:.8}
+.b-dev{background:#f3e8ff;color:#6b21a8}
+.btn-action{padding:5px 10px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;margin-right:4px;margin-bottom:2px;display:inline-block}
 .btn-apro{background:var(--ok-bg);color:var(--ok-text)}
 .btn-desp{background:var(--info-bg);color:var(--info-text)}
 .btn-ver{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.btn-pdf{background:#dc2626;color:#fff}
+.btn-dev{background:#f3e8ff;color:#6b21a8}
+.b-proy{background:#fef3e2;color:#92400e;border:1px solid #f59e0b}
+.fila-vencida td{background:#fff1f1!important}
+.fila-vencida td:first-child{border-left:3px solid #dc2626}
+.badge-vencida{display:inline-block;background:#dc2626;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle}
 .empty{text-align:center;padding:40px;color:var(--text3)}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;padding:16px}
+.loading{text-align:center;padding:30px;color:var(--text3);font-size:14px}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
 .modal-overlay.open{display:flex}
-.modal{background:var(--bg);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal{background:var(--bg);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:100%;max-width:600px;margin:auto}
 .modal h3{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .mrow{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)}
 .mrow:last-of-type{border:none}
@@ -73,10 +73,23 @@ tr:hover td{background:var(--bg2)}
 .btn-ok{background:#15803d;color:#fff}
 .btn-info{background:#185FA5;color:#fff}
 .btn-wa{background:#25D366;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+.btn-purple{background:#7c3aed;color:#fff}
+.btn-orange{background:#b45309;color:#fff}
+/* Firma */
+.firma-area{border:2px dashed var(--border2);border-radius:var(--radius);background:var(--bg2);margin:6px 0;position:relative;overflow:hidden;min-height:110px}
+.firma-area canvas{display:block;touch-action:none}
+.firma-label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text3);pointer-events:none;white-space:nowrap}
+.firma-btn-limpiar{padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--bg);cursor:pointer;font-size:11px;color:var(--text2);margin-bottom:4px}
+/* Devolucion */
+.dev-table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+.dev-table th{background:var(--bg2);padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border)}
+.dev-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.dev-table input[type=number]{width:70px;border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:13px;text-align:center}
+.dev-result{font-weight:700;color:#185FA5}
 .toast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a19;color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:13px;z-index:999}
 .toast.show{display:block}
-.loading{text-align:center;padding:30px;color:var(--text3);font-size:14px}
-@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.toolbar{flex-direction:column}.btn-export{margin-left:0}table{font-size:12px}th,td{padding:8px}}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}table{font-size:12px}th,td{padding:8px}}
 </style>
 </head>
 <body>
@@ -88,14 +101,12 @@ tr:hover td{background:var(--bg2)}
     </div>
     <span class="badge-geo">GEO</span>
   </header>
-
   <div class="stats">
     <div class="stat stat-total"><div class="stat-num" id="s-total">—</div><div class="stat-label">Total solicitudes</div></div>
     <div class="stat stat-pend"><div class="stat-num" id="s-pend">—</div><div class="stat-label">Pendientes</div></div>
     <div class="stat stat-apro"><div class="stat-num" id="s-apro">—</div><div class="stat-label">Aprobadas</div></div>
     <div class="stat stat-desp"><div class="stat-num" id="s-desp">—</div><div class="stat-label">Despachadas</div></div>
   </div>
-
   <div class="toolbar">
     <button class="filter-btn active" onclick="setFiltro('Todos',this)">Todos</button>
     <button class="filter-btn" onclick="setFiltro('Pendiente',this)">Pendientes</button>
@@ -105,25 +116,13 @@ tr:hover td{background:var(--bg2)}
     <button class="btn-refresh" onclick="cargar()">↻ Actualizar</button>
     <button class="btn-export" onclick="exportarExcel()">📥 Exportar Excel</button>
   </div>
-
   <table>
     <thead>
-      <tr>
-        <th>ID</th>
-        <th>Fecha req.</th>
-        <th>Solicitante</th>
-        <th>Destino</th>
-        <th>Artículos</th>
-        <th>Estado</th>
-        <th>Acciones</th>
-      </tr>
+      <tr><th>ID</th><th>Fecha req.</th><th>Solicitante</th><th>Destino</th><th>Artículos</th><th>Estado</th><th>Acciones</th></tr>
     </thead>
-    <tbody id="tabla-body">
-      <tr><td colspan="7" class="loading">Cargando...</td></tr>
-    </tbody>
+    <tbody id="tabla-body"><tr><td colspan="7" class="loading">Cargando...</td></tr></tbody>
   </table>
 </div>
-
 <div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
   <div class="modal" id="modal-inner"></div>
 </div>
@@ -136,41 +135,43 @@ tr:hover td{background:var(--bg2)}
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let todas = [];
 let filtro = 'Todos';
+let isDrawing = false, lastX = 0, lastY = 0, firmaActiva = null;
 
-async function cargar(){
-  const { data, error } = await sb.from('solicitudes').select('*').order('correlativo', {ascending:false});
-  if(error){ toast('❌ Error al cargar datos'); return; }
+// ===== CARGA DE DATOS =====
+async function cargar() {
+  const { data, error } = await sb.from('solicitudes').select('*').order('correlativo', { ascending: false });
+  if (error) { toast('❌ Error al cargar datos'); return; }
   todas = data || [];
   actualizarStats();
   renderTabla();
 }
 
-function actualizarStats(){
+function actualizarStats() {
   document.getElementById('s-total').textContent = todas.length;
-  document.getElementById('s-pend').textContent = todas.filter(s=>s.estado==='Pendiente').length;
-  document.getElementById('s-apro').textContent = todas.filter(s=>s.estado==='Aprobada').length;
-  document.getElementById('s-desp').textContent = todas.filter(s=>s.estado==='Despachada').length;
+  document.getElementById('s-pend').textContent = todas.filter(s => s.estado === 'Pendiente').length;
+  document.getElementById('s-apro').textContent = todas.filter(s => s.estado === 'Aprobada').length;
+  document.getElementById('s-desp').textContent = todas.filter(s => s.estado === 'Despachada').length;
 }
 
-function setFiltro(f, btn){
+function setFiltro(f, btn) {
   filtro = f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderTabla();
 }
 
-function renderTabla(){
+function renderTabla() {
   let lista;
-  if(filtro==='Todos') lista = todas;
-  else if(filtro==='Proyecto') lista = todas.filter(s=>s.tipo==='proyecto');
-  else lista = todas.filter(s=>s.estado===filtro);
+  if (filtro === 'Todos') lista = todas;
+  else if (filtro === 'Proyecto') lista = todas.filter(s => s.tipo === 'proyecto');
+  else lista = todas.filter(s => s.estado === filtro);
   const tbody = document.getElementById('tabla-body');
-  if(!lista.length){ tbody.innerHTML='<tr><td colspan="7" class="empty">No hay solicitudes.</td></tr>'; return; }
-  tbody.innerHTML = lista.map(s=>{
-    const items = JSON.parse(s.items||'[]');
-    const itemsStr = items.map(i=>`${i.desc} (${i.qty} ${i.unidad})`).join(', ');
-    const badgeClass = s.estado==='Pendiente'?'b-pend':s.estado==='Aprobada'?'b-apro':'b-desp';
-    const proyBadge = s.tipo==='proyecto' ? ` <span class="badge b-proy">Proyecto</span>` : '';
+  if (!lista.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hay solicitudes.</td></tr>'; return; }
+  tbody.innerHTML = lista.map(s => {
+    const items = JSON.parse(s.items || '[]');
+    const itemsStr = items.map(i => `${i.desc}(${i.qty} ${i.unidad})`).join(', ');
+    const bc = s.estado === 'Pendiente' ? 'b-pend' : s.estado === 'Aprobada' ? 'b-apro' : s.estado === 'Despachada' ? 'b-desp' : 'b-dev';
+    const proyBadge = s.tipo === 'proyecto' ? ` <span class="badge b-proy">Proyecto</span>` : '';
     // Alerta 3 dias sin devolver
     let diasDesp = 0, filaVencida = '';
     if (s.estado === 'Despachada' && s.despachado_en) {
@@ -178,217 +179,478 @@ function renderTabla(){
       if (diasDesp >= 3) filaVencida = 'fila-vencida';
     }
     const badgeVencida = filaVencida ? `<span class="badge-vencida">! ${diasDesp}d</span>` : '';
-    const acciones = s.estado==='Pendiente'
-      ? `<button class="btn-action btn-apro" onclick="cambiarEstado('${s.id}','Aprobada')">Aprobar</button><button class="btn-action btn-desp" onclick="cambiarEstado('${s.id}','Despachada')">Despachar</button>`
-      : s.estado==='Aprobada'
-      ? `<button class="btn-action btn-desp" onclick="cambiarEstado('${s.id}','Despachada')">Despachar</button>`
-      : s.estado==='Despachada'
-      ? `<button class="btn-action btn-dev" onclick="abrirDevolucion('${s.id}')">↩ Devolucion</button>`
-      : s.estado==='Devuelta'
-      ? `<button class="btn-action btn-dev" onclick="verDevolucion('${s.id}')">📋 Ver devolucion</button>`
-      : '<span style="color:var(--text3);font-size:12px">Completado</span>';
+    let acc = `<button class="btn-action btn-ver" onclick="verDetalle('${s.id}')">Ver</button>`;
+    if (s.estado === 'Pendiente') {
+      acc += `<button class="btn-action btn-apro" onclick="cambiarEstado('${s.id}','Aprobada')">Aprobar</button>
+              <button class="btn-action btn-desp" onclick="cambiarEstado('${s.id}','Despachada')">Despachar</button>`;
+    } else if (s.estado === 'Aprobada') {
+      acc += `<button class="btn-action btn-desp" onclick="cambiarEstado('${s.id}','Despachada')">Despachar</button>
+              <button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>`;
+    } else if (s.estado === 'Despachada') {
+      acc += `<button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>
+              <button class="btn-action btn-dev" onclick="abrirDevolucion('${s.id}')">↩ Devolución</button>`;
+    } else if (s.estado === 'Devuelta') {
+      acc += `<button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Despacho</button>
+              <button class="btn-action btn-dev" onclick="verDevolucion('${s.id}')">📋 Ver devolución</button>`;
+    }
     return `<tr class="${filaVencida}">
       <td><b>${s.id}</b>${proyBadge}${badgeVencida}</td>
-      <td>${s.fecha_requerida||'—'}</td>
+      <td>${s.fecha_requerida || '—'}</td>
       <td>${s.solicitante}</td>
       <td>${s.destino}</td>
       <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${itemsStr}">${itemsStr}</td>
-      <td><span class="badge ${badgeClass}">${s.estado}</span></td>
-      <td>
-        <button class="btn-action btn-ver" onclick="verDetalle('${s.id}')">Ver</button>
-        ${acciones}
-      </td>
+      <td><span class="badge ${bc}">${s.estado}</span></td>
+      <td>${acc}</td>
     </tr>`;
   }).join('');
 }
 
-async function cambiarEstado(id, estado){
-  const campo = estado==='Aprobada' ? {estado, aprobado_en: new Date().toISOString()} : {estado, despachado_en: new Date().toISOString()};
+async function cambiarEstado(id, estado) {
+  const campo = estado === 'Aprobada' ? { estado, aprobado_en: new Date().toISOString() } : { estado, despachado_en: new Date().toISOString() };
   const { error } = await sb.from('solicitudes').update(campo).eq('id', id);
-  if(error){ toast('❌ Error al actualizar'); return; }
+  if (error) { toast('❌ Error al actualizar'); return; }
   toast(`✅ Solicitud ${id} marcada como ${estado}`);
   cargar();
 }
 
-function verDetalle(id){
-  const s = todas.find(x=>x.id===id);
-  if(!s) return;
-  const items = JSON.parse(s.items||'[]');
-  const badgeClass = s.estado==='Pendiente'?'b-pend':s.estado==='Aprobada'?'b-apro':'b-desp';
-  const msg = buildMsg({...s, items});
-  const msgEnc = encodeURIComponent(msg);
-  const acciones = s.estado==='Pendiente'
-    ? `<button class="btn-sm btn-ok" onclick="cambiarEstado('${s.id}','Aprobada');cerrarModalBtn()">Aprobar</button>
-       <button class="btn-sm btn-info" onclick="cambiarEstado('${s.id}','Despachada');cerrarModalBtn()">Despachar</button>`
-    : s.estado==='Aprobada'
-    ? `<button class="btn-sm btn-info" onclick="cambiarEstado('${s.id}','Despachada');cerrarModalBtn()">Marcar despachada</button>`
-    : '';
+// ===== VER DETALLE =====
+function verDetalle(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s) return;
+  const items = JSON.parse(s.items || '[]');
+  const bc = s.estado === 'Pendiente' ? 'b-pend' : s.estado === 'Aprobada' ? 'b-apro' : s.estado === 'Despachada' ? 'b-desp' : 'b-dev';
+  const msgEnc = encodeURIComponent(buildMsg(s));
+  let botones = `<button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>`;
+  if (s.estado === 'Pendiente') {
+    botones += `<button class="btn-sm btn-ok" onclick="cambiarEstado('${s.id}','Aprobada');cerrarModalBtn()">Aprobar</button>
+                <button class="btn-sm btn-info" onclick="cambiarEstado('${s.id}','Despachada');cerrarModalBtn()">Despachar</button>`;
+  } else if (s.estado === 'Aprobada') {
+    botones += `<button class="btn-sm btn-info" onclick="cambiarEstado('${s.id}','Despachada');cerrarModalBtn()">Despachar</button>
+                <button class="btn-sm btn-red" onclick="cerrarModalBtn();abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>`;
+  } else if (s.estado === 'Despachada') {
+    botones += `<button class="btn-sm btn-red" onclick="cerrarModalBtn();abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>
+                <button class="btn-sm btn-purple" onclick="cerrarModalBtn();abrirDevolucion('${s.id}')">↩ Devolución</button>`;
+  } else if (s.estado === 'Devuelta') {
+    botones += `<button class="btn-sm btn-red" onclick="cerrarModalBtn();abrirFirmaDespacho('${s.id}')">📄 Despacho</button>
+                <button class="btn-sm btn-purple" onclick="cerrarModalBtn();verDevolucion('${s.id}')">📋 Ver devolución</button>`;
+  }
+  botones += `<button class="btn-sm btn-wa" onclick="window.open('https://wa.me/50231117277?text=${msgEnc}','_blank')">📲 WA</button>`;
   document.getElementById('modal-inner').innerHTML = `
-    <h3>${s.id} <span class="badge ${badgeClass}">${s.estado}</span></h3>
+    <h3>${s.id} <span class="badge ${bc}">${s.estado}</span></h3>
     <div class="mrow"><span>Solicitante</span><span>${s.solicitante}</span></div>
     <div class="mrow"><span>Bodega origen</span><span>${s.origen}</span></div>
     <div class="mrow"><span>Destino</span><span>${s.destino}</span></div>
-    ${s.tipo==='proyecto'?`<div class="mrow"><span>🏗 Código Bitrix</span><span style="font-weight:700;color:#92400e">${s.bitrix||'—'}</span></div>`:''}
-    <div class="mrow"><span>Fecha requerida</span><span>${s.fecha_requerida||'—'}</span></div>
-    ${s.observaciones?`<div class="mrow"><span>Observaciones</span><span>${s.observaciones}</span></div>`:''}
-    ${s.aprobado_en?`<div class="mrow"><span>Aprobado el</span><span>${new Date(s.aprobado_en).toLocaleString('es')}</span></div>`:''}
-    ${s.despachado_en?`<div class="mrow"><span>Despachado el</span><span>${new Date(s.despachado_en).toLocaleString('es')}</span></div>`:''}
+    <div class="mrow"><span>Fecha requerida</span><span>${s.fecha_requerida || '—'}</span></div>
+    ${s.observaciones ? `<div class="mrow"><span>Observaciones</span><span>${s.observaciones}</span></div>` : ''}
+    ${s.aprobado_en ? `<div class="mrow"><span>Aprobado</span><span>${new Date(s.aprobado_en).toLocaleString('es')}</span></div>` : ''}
+    ${s.despachado_en ? `<div class="mrow"><span>Despachado</span><span>${new Date(s.despachado_en).toLocaleString('es')}</span></div>` : ''}
     <div class="mlabel">Artículos</div>
-    ${items.map(i=>`<div class="mrow"><span>${i.desc}</span><span>${i.qty} ${i.unidad}</span></div>`).join('')}
+    ${items.map(i => `<div class="mrow"><span>${i.desc}</span><span>${i.qty} ${i.unidad}</span></div>`).join('')}
+    <div class="modal-actions">${botones}</div>`;
+  abrirModalOverlay();
+}
+
+// ===== HOJA DE DESPACHO + FIRMA DIGITAL =====
+function infoHTML(s) {
+  const items = JSON.parse(s.items || '[]');
+  return `<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:13px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div><b>ID:</b> ${s.id}</div>
+      <div><b>Fecha:</b> ${s.fecha_requerida || '—'}</div>
+      <div><b>Solicitante:</b> ${s.solicitante}</div>
+      <div><b>Destino:</b> ${s.destino}</div>
+      <div><b>Origen:</b> ${s.origen}</div>
+      ${s.observaciones ? `<div><b>Obs:</b> ${s.observaciones}</div>` : ''}
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text2)">
+      ${items.map((i, n) => `${n + 1}. ${i.desc} — ${i.qty} ${i.unidad}`).join(' | ')}
+    </div>
+  </div>`;
+}
+
+function abrirFirmaDespacho(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s) return;
+  const yaFirmado = s.firma_entrega || s.firma_recibe;
+  if (yaFirmado) {
+    // Mostrar firmas guardadas
+    document.getElementById('modal-inner').innerHTML = `
+      <h3>📄 Hoja de Despacho — ${s.id}</h3>
+      <div style="background:var(--ok-bg);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--ok-text)">
+        ✅ Esta hoja ya tiene firmas guardadas.
+      </div>
+      ${infoHTML(s)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <div class="mlabel">Firma — Entrega (Luis)</div>
+          <div class="firma-area" style="padding:8px">
+            ${s.firma_entrega ? `<img src="${s.firma_entrega}" style="max-width:100%;height:90px;object-fit:contain">` : '<div style="height:90px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>'}
+          </div>
+        </div>
+        <div>
+          <div class="mlabel">Firma — Recibe (Técnico)</div>
+          <div class="firma-area" style="padding:8px">
+            ${s.firma_recibe ? `<img src="${s.firma_recibe}" style="max-width:100%;height:90px;object-fit:contain">` : '<div style="height:90px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>'}
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
+        <button class="btn-sm btn-orange" onclick="resetFirmas('${s.id}')">🔄 Refirmar</button>
+        <button class="btn-sm btn-red" onclick="generarPDFDespacho('${s.id}')">🖨 Imprimir / PDF</button>
+      </div>`;
+    abrirModalOverlay();
+  } else {
+    // Sin firmas — canvas para firmar
+    document.getElementById('modal-inner').innerHTML = `
+      <h3>📄 Hoja de Despacho — ${s.id}</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Firmá digitalmente y luego guardá para generar el PDF.</p>
+      ${infoHTML(s)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div class="mlabel">✍ Firma — Entrega (Luis)</div>
+          <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-entrega')">Limpiar</button>
+          <div class="firma-area">
+            <canvas id="c-entrega" width="260" height="100"></canvas>
+            <span class="firma-label">Firma de entrega</span>
+          </div>
+        </div>
+        <div>
+          <div class="mlabel">✍ Firma — Recibe (Técnico)</div>
+          <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-recibe')">Limpiar</button>
+          <div class="firma-area">
+            <canvas id="c-recibe" width="260" height="100"></canvas>
+            <span class="firma-label">Firma de recepción</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
+        <button class="btn-sm btn-ok" onclick="guardarYGenerarPDF('${s.id}')">💾 Guardar y generar PDF</button>
+      </div>`;
+    abrirModalOverlay();
+    setTimeout(() => { iniciarCanvas('c-entrega'); iniciarCanvas('c-recibe'); }, 100);
+  }
+}
+
+async function resetFirmas(id) {
+  if (!confirm('¿Borrar las firmas actuales para volver a firmar?')) return;
+  const { error } = await sb.from('solicitudes').update({ firma_entrega: null, firma_recibe: null }).eq('id', id);
+  if (error) { toast('❌ Error'); return; }
+  await cargar();
+  abrirFirmaDespacho(id);
+}
+
+async function guardarYGenerarPDF(id) {
+  const fe = canvasToBase64('c-entrega');
+  const fr = canvasToBase64('c-recibe');
+  if (!fe && !fr) { toast('⚠ Dibujá al menos una firma'); return; }
+  const { error } = await sb.from('solicitudes').update({ firma_entrega: fe, firma_recibe: fr }).eq('id', id);
+  if (error) { toast('❌ Error al guardar firmas'); return; }
+  toast('✅ Firmas guardadas');
+  await cargar();
+  const s = todas.find(x => x.id === id);
+  if (s) imprimirDespacho(s, fe, fr);
+  cerrarModalBtn();
+}
+
+function generarPDFDespacho(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s) return;
+  imprimirDespacho(s, s.firma_entrega, s.firma_recibe);
+}
+
+function imprimirDespacho(s, fe, fr) {
+  const items = JSON.parse(s.items || '[]');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despacho ${s.id}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:12px;padding:20px}
+  .hdr{background:#1a3a6b;color:#fff;padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .hdr h1{font-size:15px}.hdr p{font-size:10px;opacity:.8;margin-top:2px}
+  .badge{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .info{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#dce6f1;padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px}
+  th{background:#1a3a6b;color:#fff;padding:7px 10px;text-align:left;font-size:10px}
+  td{padding:6px 10px;border-bottom:1px solid #e0dedd;font-size:11px}
+  tr:nth-child(even)td{background:#f5f5f3}
+  .firmas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+  .fbox{border:1px solid #ccc;border-radius:6px;padding:10px;text-align:center}
+  .ftit{font-size:10px;font-weight:700;color:#5a5a57;text-transform:uppercase;margin-bottom:6px}
+  .fimg{max-width:100%;height:70px;object-fit:contain}
+  .fline{border-top:1px solid #999;margin-top:40px;padding-top:4px;font-size:9px;color:#777}
+  .foot{margin-top:12px;font-size:9px;color:#777;text-align:center;border-top:1px solid #eee;padding-top:8px}
+  @media print{.hdr,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
+  <div class="hdr"><div><h1>HOJA DE DESPACHO</h1><p>GEOINFORMATICA S.A.</p></div><span class="badge">${s.id}</span></div>
+  <div class="info">
+    <div><b>Solicitante:</b> ${s.solicitante}</div>
+    <div><b>Fecha requerida:</b> ${s.fecha_requerida || '—'}</div>
+    <div><b>Bodega origen:</b> ${s.origen}</div>
+    <div><b>Destino:</b> ${s.destino}</div>
+    ${s.observaciones ? `<div style="grid-column:1/-1"><b>Obs:</b> ${s.observaciones}</div>` : ''}
+  </div>
+  <table><thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cantidad</th></tr></thead>
+  <tbody>${items.map((i, n) => `<tr><td>${n + 1}</td><td>${i.desc}</td><td>${i.unidad}</td><td><b>${i.qty}</b></td></tr>`).join('')}</tbody></table>
+  <div class="firmas">
+    <div class="fbox"><div class="ftit">Entregado por (Bodega)</div>${fe ? `<img class="fimg" src="${fe}">` : ''}<div class="fline">Nombre y firma / Fecha</div></div>
+    <div class="fbox"><div class="ftit">Recibido por (Técnico)</div>${fr ? `<img class="fimg" src="${fr}">` : ''}<div class="fline">Nombre y firma / Fecha</div></div>
+  </div>
+  <div class="foot">Generado el ${new Date().toLocaleString('es')} — GEOINFORMATICA S.A.</div>
+  <script>window.onload=()=>window.print()<\/script></body></html>`;
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ===== DEVOLUCIÓN =====
+function abrirDevolucion(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s) return;
+  const items = JSON.parse(s.items || '[]');
+  const filas = items.map((item, i) => `
+    <tr>
+      <td>${item.desc}</td>
+      <td style="text-align:center">${item.unidad}</td>
+      <td style="text-align:center"><b>${item.qty}</b></td>
+      <td style="text-align:center"><input type="number" id="usado_${i}" value="${item.qty}" min="0" max="${item.qty}" oninput="calcDev(${i},${item.qty})"></td>
+      <td style="text-align:center" id="dev_${i}" class="dev-result">0</td>
+    </tr>`).join('');
+
+  document.getElementById('modal-inner').innerHTML = `
+    <h3>↩ Devolución — ${s.id}</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px">
+      Ingresá cuánto se <b>usó</b>. La cantidad a devolver se calcula sola.
+    </p>
+    <table class="dev-table">
+      <thead><tr><th>Artículo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>A devolver</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+      <div>
+        <div class="mlabel">✍ Firma — Devuelve (Técnico)</div>
+        <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-dev-tec')">Limpiar</button>
+        <div class="firma-area"><canvas id="c-dev-tec" width="260" height="90"></canvas><span class="firma-label">Técnico que devuelve</span></div>
+      </div>
+      <div>
+        <div class="mlabel">✍ Firma — Recibe bodega (Luis)</div>
+        <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-dev-bod')">Limpiar</button>
+        <div class="firma-area"><canvas id="c-dev-bod" width="260" height="90"></canvas><span class="firma-label">Bodega que recibe</span></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cancelar</button>
+      <button class="btn-sm btn-red" onclick="imprimirDevolucion('${s.id}')">🖨 Hoja PDF</button>
+      <button class="btn-sm btn-purple" onclick="guardarDevolucion('${s.id}')">💾 Guardar devolución</button>
+    </div>`;
+  abrirModalOverlay();
+  setTimeout(() => {
+    items.forEach((_, i) => calcDev(i, items[i].qty));
+    iniciarCanvas('c-dev-tec');
+    iniciarCanvas('c-dev-bod');
+  }, 100);
+}
+
+function calcDev(i, total) {
+  const usado = parseFloat(document.getElementById(`usado_${i}`)?.value) || 0;
+  const dev = Math.max(0, total - usado);
+  const el = document.getElementById(`dev_${i}`);
+  if (el) { el.textContent = dev; el.style.color = dev > 0 ? '#185FA5' : '#15803d'; }
+}
+
+function getDevItems(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s) return [];
+  return JSON.parse(s.items || '[]').map((item, i) => {
+    const usado = parseFloat(document.getElementById(`usado_${i}`)?.value) || 0;
+    return { desc: item.desc, unidad: item.unidad, despachado: item.qty, usado, devuelve: Math.max(0, item.qty - usado) };
+  });
+}
+
+async function guardarDevolucion(id) {
+  const devItems = getDevItems(id);
+  const ft = canvasToBase64('c-dev-tec');
+  const fb = canvasToBase64('c-dev-bod');
+  const devData = { items: devItems, fecha: new Date().toISOString(), firma_tecnico: ft, firma_bodega: fb };
+  const { error } = await sb.from('solicitudes').update({ devolucion: JSON.stringify(devData), estado: 'Devuelta' }).eq('id', id);
+  if (error) { toast('❌ Error al guardar devolución'); return; }
+  toast('✅ Devolución registrada');
+  cerrarModalBtn();
+  cargar();
+}
+
+function imprimirDevolucion(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s) return;
+  const devItems = getDevItems(id);
+  const ft = canvasToBase64('c-dev-tec');
+  const fb = canvasToBase64('c-dev-bod');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolución ${s.id}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:12px;padding:20px}
+  .hdr{background:#7c3aed;color:#fff;padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .hdr h1{font-size:15px}.badge{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .info{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f3e8ff;padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px}
+  th{background:#7c3aed;color:#fff;padding:7px 10px;text-align:left;font-size:10px}
+  td{padding:6px 10px;border-bottom:1px solid #e0dedd;font-size:11px;text-align:center}
+  td:first-child{text-align:left}
+  tr:nth-child(even)td{background:#f5f5f3}
+  .dev-si{color:#185FA5;font-weight:700}.dev-no{color:#9a9894}
+  .firmas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+  .fbox{border:1px solid #ccc;border-radius:6px;padding:10px;text-align:center}
+  .ftit{font-size:10px;font-weight:700;color:#5a5a57;text-transform:uppercase;margin-bottom:6px}
+  .fimg{max-width:100%;height:70px;object-fit:contain}
+  .fline{border-top:1px solid #999;margin-top:40px;padding-top:4px;font-size:9px;color:#777}
+  .foot{margin-top:12px;font-size:9px;color:#777;text-align:center;border-top:1px solid #eee;padding-top:8px}
+  @media print{.hdr,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
+  <div class="hdr"><div><h1>DEVOLUCIÓN DE MATERIALES Y EQUIPOS</h1><p>GEOINFORMATICA S.A.</p></div><span class="badge">${s.id}</span></div>
+  <div class="info">
+    <div><b>Referencia:</b> ${s.id}</div>
+    <div><b>Fecha:</b> ${new Date().toLocaleDateString('es')}</div>
+    <div><b>Técnico:</b> ${s.solicitante}</div>
+    <div><b>Proyecto:</b> ${s.destino}</div>
+  </div>
+  <table><thead><tr><th>Artículo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>Devuelve</th></tr></thead>
+  <tbody>${devItems.map(i => `<tr><td>${i.desc}</td><td>${i.unidad}</td><td>${i.despachado}</td><td>${i.usado}</td><td class="${i.devuelve > 0 ? 'dev-si' : 'dev-no'}">${i.devuelve > 0 ? i.devuelve : '—'}</td></tr>`).join('')}</tbody></table>
+  <div class="firmas">
+    <div class="fbox"><div class="ftit">Devuelve (Técnico)</div>${ft ? `<img class="fimg" src="${ft}">` : ''}<div class="fline">Nombre y firma / Fecha</div></div>
+    <div class="fbox"><div class="ftit">Recibe bodega (Luis)</div>${fb ? `<img class="fimg" src="${fb}">` : ''}<div class="fline">Nombre y firma / Fecha</div></div>
+  </div>
+  <div class="foot">Generado el ${new Date().toLocaleString('es')} — GEOINFORMATICA S.A.</div>
+  <script>window.onload=()=>window.print()<\/script></body></html>`;
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ===== CANVAS FIRMA =====
+function iniciarCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#1a3a6b';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const getPos = e => {
+    const r = canvas.getBoundingClientRect();
+    if (e.touches) return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+  canvas.onmousedown = e => { isDrawing = true; firmaActiva = id; const p = getPos(e); lastX = p.x; lastY = p.y; };
+  canvas.onmousemove = e => {
+    if (!isDrawing || firmaActiva !== id) return;
+    const p = getPos(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  };
+  canvas.onmouseup = () => { isDrawing = false; };
+  canvas.ontouchstart = e => { e.preventDefault(); isDrawing = true; firmaActiva = id; const p = getPos(e); lastX = p.x; lastY = p.y; };
+  canvas.ontouchmove = e => {
+    e.preventDefault();
+    if (!isDrawing || firmaActiva !== id) return;
+    const p = getPos(e);
+    ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(p.x, p.y); ctx.stroke();
+    lastX = p.x; lastY = p.y;
+  };
+  canvas.ontouchend = () => { isDrawing = false; };
+}
+
+function limpiarCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function canvasToBase64(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+  return data.some((v, i) => i % 4 === 3 && v > 0) ? canvas.toDataURL('image/png') : null;
+}
+
+
+// ===== VER DEVOLUCIÓN =====
+function verDevolucion(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s || !s.devolucion) { toast('No hay devolución registrada'); return; }
+  const dev = JSON.parse(s.devolucion);
+  const items = dev.items || [];
+  const fecha = dev.fecha ? new Date(dev.fecha).toLocaleString('es') : '—';
+  document.getElementById('modal-inner').innerHTML = `
+    <h3>📋 Devolución — ${s.id}</h3>
+    <div style="background:#f3e8ff;border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:12px;color:#6b21a8">
+      Registrada el ${fecha}
+    </div>
+    <table class="dev-table">
+      <thead><tr><th>Artículo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>Devuelto</th></tr></thead>
+      <tbody>${items.map(i => '<tr><td>' + i.desc + '</td><td style="text-align:center">' + i.unidad + '</td><td style="text-align:center">' + i.despachado + '</td><td style="text-align:center">' + i.usado + '</td><td style="text-align:center;font-weight:700;color:' + (i.devuelve>0?'#185FA5':'#15803d') + '">' + (i.devuelve>0?i.devuelve:'—') + '</td></tr>').join('')}</tbody>
+    </table>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+      <div>
+        <div class="mlabel">Firma — Técnico que devolvió</div>
+        <div class="firma-area" style="padding:8px;min-height:90px">
+          ${dev.firma_tecnico ? '<img src="' + dev.firma_tecnico + '" style="max-width:100%;height:80px;object-fit:contain">' : '<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>'}
+        </div>
+      </div>
+      <div>
+        <div class="mlabel">Firma — Bodega que recibió</div>
+        <div class="firma-area" style="padding:8px;min-height:90px">
+          ${dev.firma_bodega ? '<img src="' + dev.firma_bodega + '" style="max-width:100%;height:80px;object-fit:contain">' : '<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>'}
+        </div>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
-      ${acciones}
-      <button class="btn-sm btn-wa" onclick="window.open('https://wa.me/50231117277?text=${msgEnc}','_blank')">📲 WhatsApp</button>
+      <button class="btn-sm btn-red" onclick="imprimirDevGuardada('${s.id}')">🖨 Imprimir</button>
     </div>`;
-  document.getElementById('modal-overlay').classList.add('open');
+  abrirModalOverlay();
 }
 
-function buildMsg(s){
-  const items = Array.isArray(s.items) ? s.items : JSON.parse(s.items||'[]');
-  const lineas = items.map((i,n)=>`  ${n+1}. ${i.desc} — ${i.qty} ${i.unidad}`).join('\n');
-  return `🏗 *SOLICITUD DE DESPACHO ${s.id}*\n📅 Fecha requerida: ${s.fecha_requerida}\n👤 Solicitante: ${s.solicitante}\n📦 Bodega origen: ${s.origen}\n📍 Destino: ${s.destino}\n`+(s.observaciones?`📝 Obs: ${s.observaciones}\n`:'')+`\n*Artículos:*\n${lineas}\n\n_Por favor confirmar recepción de esta solicitud._`;
+function imprimirDevGuardada(id) {
+  const s = todas.find(x => x.id === id);
+  if (!s || !s.devolucion) return;
+  const dev = JSON.parse(s.devolucion);
+  const rows = (dev.items||[]).map(i => '<tr><td>' + i.desc + '</td><td>' + i.unidad + '</td><td>' + i.despachado + '</td><td>' + i.usado + '</td><td class="' + (i.devuelve>0?'dev-si':'dev-no') + '">' + (i.devuelve>0?i.devuelve:'—') + '</td></tr>').join('');
+  const ft = dev.firma_tecnico ? '<img class="fimg" src="' + dev.firma_tecnico + '">' : '';
+  const fb = dev.firma_bodega ? '<img class="fimg" src="' + dev.firma_bodega + '">' : '';
+  const fecha = dev.fecha ? new Date(dev.fecha).toLocaleString('es') : '—';
+  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolucion ' + s.id + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:12px;padding:20px}.hdr{background:#7c3aed;color:#fff;padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:15px}.badge{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}.info{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f3e8ff;padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px}table{width:100%;border-collapse:collapse;margin-bottom:14px}th{background:#7c3aed;color:#fff;padding:7px 10px;text-align:left;font-size:10px}td{padding:6px 10px;border-bottom:1px solid #e0dedd;font-size:11px;text-align:center}td:first-child{text-align:left}tr:nth-child(even)td{background:#f5f5f3}.dev-si{color:#185FA5;font-weight:700}.dev-no{color:#9a9894}.firmas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}.fbox{border:1px solid #ccc;border-radius:6px;padding:10px;text-align:center}.ftit{font-size:10px;font-weight:700;color:#5a5a57;text-transform:uppercase;margin-bottom:6px}.fimg{max-width:100%;height:70px;object-fit:contain}.fline{border-top:1px solid #999;margin-top:40px;padding-top:4px;font-size:9px;color:#777}.foot{margin-top:12px;font-size:9px;color:#777;text-align:center;border-top:1px solid #eee;padding-top:8px}@media print{.hdr,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="hdr"><div><h1>DEVOLUCION DE MATERIALES Y EQUIPOS</h1><p>GEOINFORMATICA S.A.</p></div><span class="badge">' + s.id + '</span></div><div class="info"><div><b>Referencia:</b> ' + s.id + '</div><div><b>Fecha:</b> ' + fecha + '</div><div><b>Tecnico:</b> ' + s.solicitante + '</div><div><b>Proyecto:</b> ' + s.destino + '</div></div><table><thead><tr><th>Articulo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>Devuelto</th></tr></thead><tbody>' + rows + '</tbody></table><div class="firmas"><div class="fbox"><div class="ftit">Devuelve (Tecnico)</div>' + ft + '<div class="fline">Nombre y firma / Fecha</div></div><div class="fbox"><div class="ftit">Recibe bodega (Luis)</div>' + fb + '<div class="fline">Nombre y firma / Fecha</div></div></div><div class="foot">Devolucion registrada el ' + fecha + ' - GEOINFORMATICA S.A.</div><script>window.onload=function(){window.print()}<' + '/script></body></html>';
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
 }
 
-function exportarExcel(){
-  if(!todas.length){ toast('No hay datos para exportar'); return; }
-  const rows = todas.map(s=>{
-    const items = JSON.parse(s.items||'[]');
+// ===== HELPERS =====
+function buildMsg(s) {
+  const items = JSON.parse(s.items || '[]');
+  const lineas = items.map((i, n) => `  ${n + 1}. ${i.desc} — ${i.qty} ${i.unidad}`).join('\n');
+  return `🏗 *SOLICITUD DE DESPACHO ${s.id}*\n📅 Fecha requerida: ${s.fecha_requerida}\n👤 Solicitante: ${s.solicitante}\n📦 Bodega origen: ${s.origen}\n📍 Destino: ${s.destino}\n` + (s.observaciones ? `📝 Obs: ${s.observaciones}\n` : '') + `\n*Artículos:*\n${lineas}\n\n_Por favor confirmar recepción de esta solicitud._`;
+}
+
+function exportarExcel() {
+  if (!todas.length) { toast('No hay datos'); return; }
+  const rows = todas.map(s => {
+    const items = JSON.parse(s.items || '[]');
+    const dev = s.devolucion ? JSON.parse(s.devolucion) : null;
     return {
-      'ID': s.id,
-      'Solicitante': s.solicitante,
-      'Fecha requerida': s.fecha_requerida,
-      'Bodega origen': s.origen,
-      'Destino': s.destino,
-      'Observaciones': s.observaciones||'',
-      'Artículos': items.map(i=>`${i.desc} (${i.qty} ${i.unidad})`).join('; '),
+      'ID': s.id, 'Solicitante': s.solicitante, 'Fecha requerida': s.fecha_requerida,
+      'Bodega origen': s.origen, 'Destino': s.destino, 'Observaciones': s.observaciones || '',
+      'Artículos': items.map(i => `${i.desc}(${i.qty} ${i.unidad})`).join('; '),
       'Estado': s.estado,
       'Creado': s.creado_en ? new Date(s.creado_en).toLocaleString('es') : '',
       'Aprobado': s.aprobado_en ? new Date(s.aprobado_en).toLocaleString('es') : '',
-      'Despachado': s.despachado_en ? new Date(s.despachado_en).toLocaleString('es') : ''
+      'Despachado': s.despachado_en ? new Date(s.despachado_en).toLocaleString('es') : '',
+      'Devuelto': dev ? dev.items.filter(i => i.devuelve > 0).map(i => `${i.desc}:${i.devuelve}`).join('; ') : ''
     };
   });
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Solicitudes');
-  const fecha = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, `despachos_GEO_${fecha}.xlsx`);
+  XLSX.writeFile(wb, `despachos_GEO_${new Date().toISOString().slice(0, 10)}.xlsx`);
   toast('✅ Excel descargado');
 }
 
-function cerrarModal(e){ if(e.target===document.getElementById('modal-overlay')) cerrarModalBtn(); }
-function cerrarModalBtn(){ document.getElementById('modal-overlay').classList.remove('open'); }
-function toast(msg, dur=3000){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur); }
-
-// ===== DEVOLUCION =====
-function abrirDevolucion(id){
-  const s = todas.find(x=>x.id===id);
-  if(!s) return;
-  const items = JSON.parse(s.items||'[]');
-  const filas = items.map((it,i)=>`
-    <tr>
-      <td>${it.desc}</td>
-      <td style="text-align:center">${it.unidad}</td>
-      <td style="text-align:center;font-weight:700">${it.qty}</td>
-      <td style="text-align:center"><input type="number" min="0" max="${it.qty}" value="0" id="uso_${i}" style="width:58px;padding:4px;border:1px solid #ddd;border-radius:5px;text-align:center"></td>
-      <td style="text-align:center"><input type="number" min="0" max="${it.qty}" value="0" id="dev_${i}" style="width:58px;padding:4px;border:1px solid #a8d8bb;border-radius:5px;text-align:center;background:#e6f4ec"></td>
-    </tr>`).join('');
-  document.getElementById('modal-inner').innerHTML = `
-    <h3 style="color:#6b21a8">↩ Devolucion — ${s.id}</h3>
-    <div class="mrow"><span>Destino</span><span>${s.destino}</span></div>
-    <div class="mrow"><span>Solicitante</span><span>${s.solicitante}</span></div>
-    <div class="mlabel">Articulos — ingresa usado y devuelto</div>
-    <div style="overflow-x:auto;margin-bottom:12px">
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead><tr style="background:#f3e8ff">
-          <th style="padding:6px 8px;text-align:left">Articulo</th>
-          <th style="padding:6px 8px;text-align:center">Unidad</th>
-          <th style="padding:6px 8px;text-align:center">Despachado</th>
-          <th style="padding:6px 8px;text-align:center;color:#b42a2a">Usado</th>
-          <th style="padding:6px 8px;text-align:center;color:#1a7a3b">Devuelto</th>
-        </tr></thead>
-        <tbody>${filas}</tbody>
-      </table>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div>
-        <label style="font-size:11px;font-weight:700;color:#5c5c58;display:block;margin-bottom:4px">No. Boleta verde</label>
-        <input type="text" id="dev-boleta" placeholder="Ej. 000027" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:6px;font-size:13px">
-      </div>
-      <div>
-        <label style="font-size:11px;font-weight:700;color:#5c5c58;display:block;margin-bottom:4px">Recibio bodega</label>
-        <input type="text" id="dev-recibe" placeholder="Nombre" style="width:100%;padding:7px 9px;border:1px solid #ddd;border-radius:6px;font-size:13px">
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cancelar</button>
-      <button class="btn-sm" style="background:#6b21a8;color:#fff" onclick="guardarDevolucion('${s.id}',${items.length})">💾 Guardar devolucion</button>
-    </div>`;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-
-async function guardarDevolucion(id, nItems){
-  const s = todas.find(x=>x.id===id);
-  if(!s) return;
-  const items = JSON.parse(s.items||'[]');
-  const devItems = items.map((it,i)=>({
-    desc: it.desc,
-    unidad: it.unidad,
-    despachado: it.qty,
-    usado: parseFloat(document.getElementById('uso_'+i)?.value)||0,
-    devuelto: parseFloat(document.getElementById('dev_'+i)?.value)||0
-  }));
-  const devData = {
-    items: devItems,
-    boleta: document.getElementById('dev-boleta')?.value||'',
-    recibe: document.getElementById('dev-recibe')?.value||'',
-    fecha: new Date().toISOString()
-  };
-  const { error } = await sb.from('solicitudes').update({
-    devolucion: JSON.stringify(devData),
-    estado: 'Devuelta'
-  }).eq('id', id);
-  if(error){ toast('Error al guardar devolucion'); return; }
-  toast('Devolucion registrada correctamente');
-  cerrarModalBtn();
-  cargar();
-}
-
-function verDevolucion(id){
-  const s = todas.find(x=>x.id===id);
-  if(!s || !s.devolucion) { toast('Sin devolucion registrada'); return; }
-  const dev = typeof s.devolucion === 'string' ? JSON.parse(s.devolucion) : s.devolucion;
-  const filas = (dev.items||[]).map(it=>`
-    <tr>
-      <td>${it.desc}</td>
-      <td style="text-align:center">${it.unidad}</td>
-      <td style="text-align:center">${it.despachado}</td>
-      <td style="text-align:center;color:#b42a2a;font-weight:600">${it.usado}</td>
-      <td style="text-align:center;color:#1a7a3b;font-weight:600">${it.devuelto}</td>
-    </tr>`).join('');
-  document.getElementById('modal-inner').innerHTML = `
-    <h3 style="color:#6b21a8">📋 Devolucion — ${s.id}</h3>
-    <div class="mrow"><span>Destino</span><span>${s.destino}</span></div>
-    <div class="mrow"><span>Boleta verde</span><span>${dev.boleta||'—'}</span></div>
-    <div class="mrow"><span>Recibio bodega</span><span>${dev.recibe||'—'}</span></div>
-    <div class="mrow"><span>Fecha</span><span>${dev.fecha ? new Date(dev.fecha).toLocaleString('es-GT') : '—'}</span></div>
-    <div class="mlabel">Detalle</div>
-    <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead><tr style="background:#f3e8ff">
-          <th style="padding:6px 8px;text-align:left">Articulo</th>
-          <th style="padding:6px 8px;text-align:center">Unidad</th>
-          <th style="padding:6px 8px;text-align:center">Despachado</th>
-          <th style="padding:6px 8px;text-align:center;color:#b42a2a">Usado</th>
-          <th style="padding:6px 8px;text-align:center;color:#1a7a3b">Devuelto</th>
-        </tr></thead>
-        <tbody>${filas}</tbody>
-      </table>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
-      <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
-    </div>`;
-  document.getElementById('modal-overlay').classList.add('open');
-}
+function abrirModalOverlay() { document.getElementById('modal-overlay').classList.add('open'); }
+function cerrarModal(e) { if (e.target === document.getElementById('modal-overlay')) cerrarModalBtn(); }
+function cerrarModalBtn() { document.getElementById('modal-overlay').classList.remove('open'); }
+function toast(msg, dur = 3000) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), dur); }
 
 cargar();
 setInterval(cargar, 30000);
