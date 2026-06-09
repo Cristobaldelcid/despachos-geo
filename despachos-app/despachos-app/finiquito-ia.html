@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finiquito IA — GEO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#171a23;--bg3:#1e2130;--card:#1e2130;
+  --text:#e8eaf0;--text2:#9097b0;--text3:#555e7a;
+  --border:#2a2f45;--border2:#353c58;
+  --azul:#4f8ef7;--azul2:#1a2a4a;--azul3:#0d1a35;
+  --verde:#34c77b;--verde2:#0d2e1e;
+  --rojo:#f75f5f;--rojo2:#2e0d0d;
+  --naranja:#f7a034;--naranja2:#2e1a0d;
+  --amarillo:#f7d534;
+  --radius:12px;--radius-lg:16px;--radius-xl:20px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5}
+.app{max-width:820px;margin:0 auto;padding:24px 16px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.header-left{display:flex;align-items:center;gap:14px}
+.logo{width:42px;height:42px;background:linear-gradient(135deg,var(--azul),#2563eb);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.header h1{font-size:18px;font-weight:600;color:var(--text)}
+.header p{font-size:12px;color:var(--text3);margin-top:1px}
+.badge{background:var(--azul2);color:var(--azul);font-size:10px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--azul);letter-spacing:.08em}
+
+/* Steps indicator */
+.steps{display:flex;align-items:center;gap:0;margin-bottom:28px}
+.step{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:var(--radius);font-size:13px;color:var(--text3);transition:all .3s;cursor:default}
+.step.active{background:var(--azul2);color:var(--azul)}
+.step.done{color:var(--verde)}
+.step-num{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.step.done .step-num{background:var(--verde);border-color:var(--verde);color:#000}
+.step-divider{flex:1;height:1px;background:var(--border);margin:0 4px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ci-azul{background:var(--azul2)}
+.ci-verde{background:var(--verde2)}
+.ci-naranja{background:var(--naranja2)}
+.ci-rojo{background:var(--rojo2)}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+.card-sub{font-size:12px;color:var(--text3);margin-top:1px}
+
+/* Upload zones */
+.upload-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:20px 12px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);position:relative}
+.upload-zone:hover{border-color:var(--azul);background:var(--azul3)}
+.upload-zone.has-file{border-color:var(--verde);border-style:solid;background:var(--verde2)}
+.upload-zone.has-file .uz-icon{color:var(--verde)}
+.uz-icon{font-size:26px;margin-bottom:8px;display:block;color:var(--text3);transition:color .2s}
+.uz-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:3px}
+.uz-sub{font-size:10px;color:var(--text3)}
+.uz-file{font-size:10px;color:var(--verde);margin-top:4px;font-family:'DM Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uz-badge{position:absolute;top:8px;right:8px;background:var(--verde);color:#000;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px}
+input[type=file]{display:none}
+
+/* Btn principal */
+.btn-ia{width:100%;padding:14px;border:none;border-radius:var(--radius);background:linear-gradient(135deg,var(--azul),#2563eb);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;letter-spacing:.01em}
+.btn-ia:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ia:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-success{background:linear-gradient(135deg,var(--verde),#16a34a)}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#b91c1c)}
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn-sm{flex:1;padding:12px;border:none;border-radius:var(--radius);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-sm:hover{opacity:.85}
+
+/* Processing */
+.processing{text-align:center;padding:32px;display:none}
+.processing.show{display:block}
+.proc-icon{font-size:48px;margin-bottom:12px;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.8}}
+.proc-title{font-size:16px;font-weight:600;margin-bottom:6px}
+.proc-sub{font-size:13px;color:var(--text2)}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;margin:16px 0;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--azul),var(--verde));border-radius:2px;animation:progress 3s ease-in-out infinite}
+@keyframes progress{0%{width:0%}50%{width:70%}100%{width:95%}}
+
+/* Resultados */
+.resultado{display:none}
+.resultado.show{display:block}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.info-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.info-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.info-value{font-size:14px;font-weight:500;color:var(--text)}
+
+/* Resumen stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-num{font-size:26px;font-weight:700;line-height:1}
+.stat-lbl{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+.s-azul .stat-num{color:var(--azul)}
+.s-verde .stat-num{color:var(--verde)}
+.s-rojo .stat-num{color:var(--rojo)}
+.s-naranja .stat-num{color:var(--naranja)}
+
+/* Alertas */
+.alertas{margin-bottom:16px}
+.alerta{display:flex;gap:10px;padding:10px 12px;border-radius:var(--radius);margin-bottom:8px;font-size:13px;border-left:3px solid}
+.a-rojo{background:var(--rojo2);border-color:var(--rojo);color:#fca5a5}
+.a-amarillo{background:var(--naranja2);border-color:var(--naranja);color:#fcd34d}
+.a-verde{background:var(--verde2);border-color:var(--verde);color:#86efac}
+
+/* Tabla */
+.tabla-wrap{overflow-x:auto;margin-bottom:12px}
+.tabla{width:100%;border-collapse:collapse;font-size:12px}
+.tabla th{background:var(--bg3);color:var(--text2);padding:8px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)}
+.tabla td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.tabla tr:last-child td{border:none}
+.tabla tr:hover td{background:var(--bg3)}
+.badge-ok{background:var(--verde2);color:var(--verde);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.badge-falt{background:var(--rojo2);color:var(--rojo);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.badge-exc{background:var(--azul2);color:var(--azul);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+.badge-ext{background:var(--naranja2);color:var(--naranja);font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+
+/* Sección header */
+.sec-header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--radius);margin-bottom:10px;font-size:13px;font-weight:600}
+.sh-azul{background:var(--azul2);color:var(--azul);border:1px solid var(--azul)}
+.sh-verde{background:var(--verde2);color:var(--verde);border:1px solid var(--verde)}
+.sh-rojo{background:var(--rojo2);color:var(--rojo);border:1px solid var(--rojo)}
+.sh-naranja{background:var(--naranja2);color:var(--naranja);border:1px solid var(--naranja)}
+
+/* Toast */
+.toast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);color:var(--text);padding:12px 22px;border-radius:var(--radius);font-size:13px;z-index:999;border:1px solid var(--border2);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.toast.show{display:block}
+
+/* Editable fields */
+.edit-field{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;width:100%;outline:none;transition:border-color .2s}
+.edit-field:focus{border-color:var(--azul)}
+
+@media(max-width:600px){
+  .upload-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .info-grid{grid-template-columns:1fr}
+  .steps{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">🤖</div>
+      <div>
+        <h1>Finiquito con IA</h1>
+        <p>GEOINFORMATICA S.A. — Sube los documentos y la IA genera el finiquito</p>
+      </div>
+    </div>
+    <span class="badge">GEO · IA</span>
+  </div>
+
+  <div class="steps" id="stepsBar">
+    <div class="step active" id="s1"><span class="step-num">1</span>Subir documentos</div>
+    <div class="step-divider"></div>
+    <div class="step" id="s2"><span class="step-num">2</span>Análisis IA</div>
+    <div class="step-divider"></div>
+    <div class="step" id="s3"><span class="step-num">3</span>Revisar y descargar</div>
+  </div>
+
+  <!-- PASO 1: Subir documentos -->
+  <div id="paso1">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon ci-azul">📄</div>
+        <div>
+          <div class="card-title">Subí los 3 documentos del proyecto</div>
+          <div class="card-sub">PDF o imagen (JPG/PNG). La IA lee y extrae todos los datos automáticamente.</div>
+        </div>
+      </div>
+
+      <div class="upload-grid">
+        <div class="upload-zone" id="zone1" onclick="document.getElementById('f1').click()">
+          <span class="uz-icon">📋</span>
+          <div class="uz-title">Hoja de Despacho</div>
+          <div class="uz-sub">PDF generado por Fernando</div>
+          <div class="uz-file" id="f1name"></div>
+          <input type="file" id="f1" accept=".pdf,.jpg,.jpeg,.png" onchange="archivoSeleccionado(this,'zone1','f1name',1)">
+        </div>
+        <div class="upload-zone" id="zone2" onclick="document.getElementById('f2').click()">
+          <span class="uz-icon">🌸</span>
+          <div class="uz-title">Boleta Rosada</div>
+          <div class="uz-sub">Lo que instalaron los técnicos</div>
+          <div class="uz-file" id="f2name"></div>
+          <input type="file" id="f2" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="archivoSeleccionado(this,'zone2','f2name',2)">
+        </div>
+        <div class="upload-zone" id="zone3" onclick="document.getElementById('f3').click()">
+          <span class="uz-icon">🟢</span>
+          <div class="uz-title">Boleta de Devolución</div>
+          <div class="uz-sub">Lo que devolvieron a bodega</div>
+          <div class="uz-file" id="f3name"></div>
+          <input type="file" id="f3" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="archivoSeleccionado(this,'zone3','f3name',3)">
+        </div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:12px;color:var(--text2);margin-bottom:16px">
+        💡 <strong style="color:var(--text)">Tip:</strong> La boleta rosada y la de devolución pueden ser fotos tomadas con el celular. No necesitás escanear — con una foto clara es suficiente. Podés subir varias boletas rosadas si el técnico llenó más de una.
+      </div>
+
+      <button class="btn-ia" id="btnAnalizar" onclick="analizarDocumentos()" disabled>
+        <span id="btnAnaIcon">🤖</span>
+        <span id="btnAnaLabel">Subí al menos un documento para continuar</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- PASO 2: Procesando -->
+  <div class="processing" id="paso2">
+    <div class="proc-icon">🤖</div>
+    <div class="proc-title">La IA está leyendo los documentos...</div>
+    <div class="proc-sub" id="procMsg">Extrayendo datos del despacho, instalación y devoluciones</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div style="font-size:12px;color:var(--text3);margin-top:8px">Esto puede tomar 15-30 segundos</div>
+  </div>
+
+  <!-- PASO 3: Resultado -->
+  <div class="resultado" id="paso3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon ci-verde">✅</div>
+        <div>
+          <div class="card-title">Análisis completado — revisá y corregí si hace falta</div>
+          <div class="card-sub">La IA extrajo los datos. Podés editar cualquier campo antes de generar el PDF.</div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Proyecto</div>
+          <input class="edit-field" id="r_proyecto" placeholder="Nombre del proyecto">
+        </div>
+        <div class="info-item">
+          <div class="info-label">Código Bitrix</div>
+          <input class="edit-field" id="r_bitrix" placeholder="Código">
+        </div>
+        <div class="info-item">
+          <div class="info-label">Técnico(s)</div>
+          <input class="edit-field" id="r_tecnicos" placeholder="Nombres">
+        </div>
+        <div class="info-item">
+          <div class="info-label">Fecha</div>
+          <input class="edit-field" id="r_fecha" type="date">
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row" id="r_stats"></div>
+
+    <!-- Alertas -->
+    <div class="alertas" id="r_alertas"></div>
+
+    <!-- Equipos despachados -->
+    <div id="r_sec_despacho"></div>
+
+    <!-- Instalado -->
+    <div id="r_sec_instalado"></div>
+
+    <!-- Devuelto -->
+    <div id="r_sec_devuelto"></div>
+
+    <!-- Extras -->
+    <div id="r_sec_extras"></div>
+
+    <!-- Observaciones -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon ci-azul">📝</div>
+        <div class="card-title">Observaciones generales</div>
+      </div>
+      <textarea class="edit-field" id="r_obs" rows="3" placeholder="Observaciones adicionales..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-sm btn-success" onclick="generarPDF()">📥 Generar Finiquito PDF</button>
+      <button class="btn-sm" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="reiniciar()">↺ Nuevo finiquito</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const {jsPDF}=window.jspdf;
+let archivos={1:null,2:[],3:[]};
+let datosIA=null;
+
+function toast(msg,dur=3500){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function archivoSeleccionado(input,zoneId,nameId,slot){
+  const files=[...input.files];
+  if(!files.length)return;
+  const zone=document.getElementById(zoneId);
+  const nameEl=document.getElementById(nameId);
+  if(slot===1){
+    archivos[1]=files[0];
+    nameEl.textContent=files[0].name;
+  } else {
+    archivos[slot]=files;
+    nameEl.textContent=files.length===1?files[0].name:`${files.length} archivos seleccionados`;
+  }
+  zone.classList.add('has-file');
+  zone.querySelector('.uz-icon').textContent='✅';
+  // Badge
+  let badge=zone.querySelector('.uz-badge');
+  if(!badge){badge=document.createElement('span');badge.className='uz-badge';zone.appendChild(badge);}
+  badge.textContent='OK';
+  verificarBoton();
+}
+
+function verificarBoton(){
+  const alguno=archivos[1]||archivos[2].length||archivos[3].length;
+  const btn=document.getElementById('btnAnalizar');
+  btn.disabled=!alguno;
+  document.getElementById('btnAnaLabel').textContent=alguno?'Analizar documentos con IA':'Subí al menos un documento para continuar';
+}
+
+async function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function getMediaType(file){
+  if(file.type==='application/pdf') return 'application/pdf';
+  if(file.type==='image/png') return 'image/png';
+  return 'image/jpeg';
+}
+
+async function analizarDocumentos(){
+  // Cambiar a paso 2
+  document.getElementById('paso1').style.display='none';
+  document.getElementById('paso2').classList.add('show');
+  setStep(2);
+
+  try{
+    // Construir contenido para Claude
+    const content=[];
+
+    // Texto de instrucción
+    content.push({
+      type:'text',
+      text:`Eres un asistente de GEOINFORMATICA S.A. que analiza documentos de proyectos de instalación de sistemas de seguridad.
+      
+Analiza los documentos adjuntos y extrae TODOS los datos en formato JSON. Los documentos pueden ser:
+1. HOJA DE DESPACHO: PDF con lo que se entregó de bodega (equipos y materiales)
+2. BOLETA ROSADA (Reporte de trabajo): Lo que el técnico instaló en campo
+3. BOLETA VERDE (Devolución): Lo que el técnico devolvió a bodega
+
+Devuelve ÚNICAMENTE un JSON con esta estructura exacta (sin texto adicional, sin markdown):
+{
+  "proyecto": "nombre del proyecto",
+  "bitrix": "código bitrix",
+  "tecnicos": "nombres de técnicos",
+  "fecha": "YYYY-MM-DD",
+  "cliente": "nombre del cliente",
+  "despachado_equipos": [{"desc":"descripción","modelo":"modelo si aplica","marca":"marca si aplica","cant":0,"serie":"número de serie si aplica"}],
+  "despachado_materiales": [{"desc":"descripción","unidad":"und/m/kg","cant":0}],
+  "instalado_equipos": [{"desc":"descripción","cant":0,"serie":"si aplica","obs":"observaciones"}],
+  "instalado_materiales": [{"desc":"descripción","unidad":"und","cant":0,"obs":""}],
+  "devuelto": [{"desc":"descripción","unidad":"und","cant":0,"metraje":"si aplica","obs":""}],
+  "extras_viaticos": [{"desc":"descripción","cant":0,"obs":""}],
+  "observaciones": "observaciones generales del trabajo",
+  "alertas": [{"tipo":"faltante|excedente|diferencia","mensaje":"descripción del problema encontrado"}]
+}
+
+Para las alertas, compara lo despachado vs lo instalado vs lo devuelto y marca:
+- "faltante": algo se despachó pero no aparece instalado ni devuelto
+- "excedente": se instaló más de lo despachado  
+- "diferencia": cantidades no cuadran
+
+Si no encuentras algún dato, usa null o array vacío. Extrae todo lo que puedas leer.`
+    });
+
+    // Agregar archivos
+    const msgs=['Procesando hoja de despacho...','Analizando boletas de instalación...','Revisando devoluciones...'];
+    let msgIdx=0;
+    const msgInterval=setInterval(()=>{
+      if(msgIdx<msgs.length){
+        document.getElementById('procMsg').textContent=msgs[msgIdx++];
+      }
+    },3000);
+
+    if(archivos[1]){
+      const b64=await fileToBase64(archivos[1]);
+      const mt=getMediaType(archivos[1]);
+      if(mt==='application/pdf'){
+        content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}});
+      } else {
+        content.push({type:'image',source:{type:'base64',media_type:mt,data:b64}});
+      }
+      content.push({type:'text',text:'El documento anterior es la HOJA DE DESPACHO.'});
+    }
+
+    for(const f of archivos[2]){
+      const b64=await fileToBase64(f);
+      const mt=getMediaType(f);
+      if(mt==='application/pdf'){
+        content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}});
+      } else {
+        content.push({type:'image',source:{type:'base64',media_type:mt,data:b64}});
+      }
+      content.push({type:'text',text:'El documento anterior es una BOLETA ROSADA (reporte de instalación del técnico).'});
+    }
+
+    for(const f of archivos[3]){
+      const b64=await fileToBase64(f);
+      const mt=getMediaType(f);
+      if(mt==='application/pdf'){
+        content.push({type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}});
+      } else {
+        content.push({type:'image',source:{type:'base64',media_type:mt,data:b64}});
+      }
+      content.push({type:'text',text:'El documento anterior es una BOLETA VERDE (devolución de materiales/equipos a bodega).'});
+    }
+
+    // Llamar a Claude API
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        messages:[{role:'user',content}]
+      })
+    });
+
+    clearInterval(msgInterval);
+    const data=await response.json();
+
+    if(!response.ok){
+      throw new Error(data.error?.message||'Error en la API');
+    }
+
+    // Parsear respuesta
+    const texto=data.content.map(c=>c.text||'').join('');
+    const jsonLimpio=texto.replace(/```json|```/g,'').trim();
+    datosIA=JSON.parse(jsonLimpio);
+
+    // Mostrar resultado
+    mostrarResultado(datosIA);
+
+  } catch(err){
+    console.error(err);
+    document.getElementById('paso2').classList.remove('show');
+    document.getElementById('paso1').style.display='';
+    setStep(1);
+    toast('❌ Error: '+err.message+'. Verificá que los archivos sean legibles.',5000);
+  }
+}
+
+function setStep(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('s'+i);
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    else if(i===n) el.classList.add('active');
+  });
+}
+
+function mostrarResultado(d){
+  document.getElementById('paso2').classList.remove('show');
+  document.getElementById('paso3').classList.add('show');
+  setStep(3);
+
+  // Info básica
+  document.getElementById('r_proyecto').value=d.proyecto||'';
+  document.getElementById('r_bitrix').value=d.bitrix||'';
+  document.getElementById('r_tecnicos').value=d.tecnicos||'';
+  document.getElementById('r_fecha').value=d.fecha||new Date().toISOString().slice(0,10);
+  document.getElementById('r_obs').value=d.observaciones||'';
+
+  // Stats
+  const eq=(d.instalado_equipos||[]).reduce((s,e)=>s+e.cant,0);
+  const mat=(d.instalado_materiales||[]).reduce((s,m)=>s+m.cant,0);
+  const dev=(d.devuelto||[]).reduce((s,v)=>s+v.cant,0);
+  const ext=(d.extras_viaticos||[]).reduce((s,e)=>s+e.cant,0);
+  document.getElementById('r_stats').innerHTML=`
+    <div class="stat-box s-azul"><div class="stat-num">${eq}</div><div class="stat-lbl">Equipos inst.</div></div>
+    <div class="stat-box s-verde"><div class="stat-num">${mat}</div><div class="stat-lbl">Materiales</div></div>
+    <div class="stat-box s-rojo"><div class="stat-num">${dev}</div><div class="stat-lbl">Devueltos</div></div>
+    <div class="stat-box s-naranja"><div class="stat-num">${ext}</div><div class="stat-lbl">Extras viát.</div></div>`;
+
+  // Alertas
+  const alertas=d.alertas||[];
+  document.getElementById('r_alertas').innerHTML=alertas.length
+    ?alertas.map(a=>`<div class="alerta ${a.tipo==='faltante'?'a-rojo':a.tipo==='excedente'?'a-amarillo':'a-verde'}">
+        <span>${a.tipo==='faltante'?'⚠':'ℹ'}</span><span><strong>${a.tipo.toUpperCase()}:</strong> ${a.mensaje}</span>
+      </div>`).join('')
+    :'<div class="alerta a-verde"><span>✓</span><span>Sin diferencias detectadas — todo cuadra correctamente.</span></div>';
+
+  // Sección despacho
+  const desp_eq=d.despachado_equipos||[];
+  const desp_mat=d.despachado_materiales||[];
+  if(desp_eq.length||desp_mat.length){
+    let html='<div class="card">';
+    html+='<div class="sec-header sh-azul">📦 Lo despachado de bodega</div>';
+    if(desp_eq.length){
+      html+=`<div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase">Equipos</div>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>#</th><th>Descripción</th><th>Marca/Modelo</th><th>Cant.</th></tr></thead>
+        <tbody>${desp_eq.map((e,i)=>`<tr><td>${i+1}</td><td>${e.desc}</td><td>${[e.marca,e.modelo].filter(Boolean).join(' ')}</td><td><strong>${e.cant}</strong></td></tr>`).join('')}</tbody>
+      </table></div>`;
+    }
+    if(desp_mat.length){
+      html+=`<div style="font-size:11px;font-weight:600;color:var(--text3);margin:10px 0 6px;text-transform:uppercase">Materiales</div>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cant.</th></tr></thead>
+        <tbody>${desp_mat.map((m,i)=>`<tr><td>${i+1}</td><td>${m.desc}</td><td>${m.unidad||'und'}</td><td><strong>${m.cant}</strong></td></tr>`).join('')}</tbody>
+      </table></div>`;
+    }
+    html+='</div>';
+    document.getElementById('r_sec_despacho').innerHTML=html;
+  }
+
+  // Sección instalado
+  const inst_eq=d.instalado_equipos||[];
+  const inst_mat=d.instalado_materiales||[];
+  if(inst_eq.length||inst_mat.length){
+    let html='<div class="card">';
+    html+='<div class="sec-header sh-verde">🔧 Lo instalado en campo (boleta rosada)</div>';
+    if(inst_eq.length){
+      html+=`<div style="font-size:11px;font-weight:600;color:var(--text3);margin-bottom:6px;text-transform:uppercase">Equipos instalados</div>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>#</th><th>Descripción</th><th>N° Serie</th><th>Cant.</th><th>Obs.</th></tr></thead>
+        <tbody>${inst_eq.map((e,i)=>`<tr><td>${i+1}</td><td>${e.desc}</td><td>${e.serie||'—'}</td><td><strong>${e.cant}</strong></td><td>${e.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+    }
+    if(inst_mat.length){
+      html+=`<div style="font-size:11px;font-weight:600;color:var(--text3);margin:10px 0 6px;text-transform:uppercase">Materiales utilizados</div>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cant.</th><th>Obs.</th></tr></thead>
+        <tbody>${inst_mat.map((m,i)=>`<tr><td>${i+1}</td><td>${m.desc}</td><td>${m.unidad||'und'}</td><td><strong>${m.cant}</strong></td><td>${m.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+    }
+    html+='</div>';
+    document.getElementById('r_sec_instalado').innerHTML=html;
+  }
+
+  // Sección devuelto
+  const dev2=d.devuelto||[];
+  if(dev2.length){
+    let html=`<div class="card">
+      <div class="sec-header sh-rojo">↩ Devuelto a bodega (boleta verde)</div>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cant.</th><th>Metraje</th><th>Obs.</th></tr></thead>
+        <tbody>${dev2.map((v,i)=>`<tr><td>${i+1}</td><td>${v.desc}</td><td>${v.unidad||'und'}</td><td><strong>${v.cant}</strong></td><td>${v.metraje||'—'}</td><td>${v.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div></div>`;
+    document.getElementById('r_sec_devuelto').innerHTML=html;
+  }
+
+  // Extras
+  const ext2=d.extras_viaticos||[];
+  if(ext2.length){
+    let html=`<div class="card">
+      <div class="sec-header sh-naranja">🛒 Compras extras de viáticos</div>
+      <div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>#</th><th>Descripción</th><th>Cant.</th><th>Obs.</th></tr></thead>
+        <tbody>${ext2.map((e,i)=>`<tr><td>${i+1}</td><td>${e.desc}</td><td><strong>${e.cant}</strong></td><td>${e.obs||''}</td></tr>`).join('')}</tbody>
+      </table></div></div>`;
+    document.getElementById('r_sec_extras').innerHTML=html;
+  }
+}
+
+function generarPDF(){
+  if(!datosIA)return;
+  const d=datosIA;
+  const proyecto=document.getElementById('r_proyecto').value||d.proyecto||'';
+  const bitrix=document.getElementById('r_bitrix').value||d.bitrix||'';
+  const tecnicos=document.getElementById('r_tecnicos').value||d.tecnicos||'';
+  const fecha=document.getElementById('r_fecha').value||d.fecha||'';
+  const obs=document.getElementById('r_obs').value||d.observaciones||'';
+
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'letter'});
+  const TW=180; let y=15;
+  const AZ=[26,58,107],AZC=[220,230,241];
+  const VD=[22,101,52],VDC=[220,252,231];
+  const RJ=[153,27,27],RJC=[254,226,226];
+  const NAR=[154,52,18],GR=[30,33,48],GR2=[242,242,242];
+
+  // Header
+  doc.setFillColor(...AZ);doc.rect(15,y,TW,13,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(13);
+  doc.text('FINIQUITO DE MATERIALES Y EQUIPOS',TW/2+15,y+5.5,{align:'center'});
+  doc.setFont('helvetica','normal');doc.setFontSize(9);
+  doc.text('GEOINFORMATICA S.A.',TW/2+15,y+10,{align:'center'});
+  y+=15;
+
+  // Info proyecto
+  [[`Proyecto: ${proyecto}`,`Código Bitrix: ${bitrix}`],[`Técnicos: ${tecnicos}`,`Fecha: ${fecha}`],[`Cliente: ${d.cliente||''}`,`Generado con IA`]].forEach(pair=>{
+    doc.setFillColor(...AZC);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(0);doc.setFont('helvetica','normal');doc.setFontSize(9);
+    doc.text(pair[0],17,y+5);doc.text(pair[1],TW/2+17,y+5);y+=8;
+  });
+  y+=4;
+
+  // Función helper tabla
+  const mkTable=(head,body,color,startY)=>{
+    doc.autoTable({head:[head],body,startY,margin:{left:15,right:15},
+      styles:{fontSize:8,cellPadding:2,valign:'middle',fontStyle:'normal'},
+      headStyles:{fillColor:color,textColor:[255,255,255],fontStyle:'bold'},
+      alternateRowStyles:{fillColor:GR2}});
+    return doc.lastAutoTable.finalY+5;
+  };
+
+  const secHeader=(txt,color)=>{
+    if(y>230){doc.addPage();y=15;}
+    doc.setFillColor(...color);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text(txt,TW/2+15,y+4.5,{align:'center'});y+=8;
+  };
+
+  // Despachado
+  if((d.despachado_equipos||[]).length||(d.despachado_materiales||[]).length){
+    secHeader('LO DESPACHADO DE BODEGA',AZ);
+    if((d.despachado_equipos||[]).length){
+      y=mkTable(['#','Descripción','Marca/Modelo','Cant.'],
+        (d.despachado_equipos||[]).map((e,i)=>[i+1,e.desc,[e.marca,e.modelo].filter(Boolean).join(' '),e.cant]),AZ,y);
+    }
+    if((d.despachado_materiales||[]).length){
+      y=mkTable(['#','Descripción','Unidad','Cant.'],
+        (d.despachado_materiales||[]).map((m,i)=>[i+1,m.desc,m.unidad||'und',m.cant]),AZ,y);
+    }
+  }
+
+  // Instalado
+  if((d.instalado_equipos||[]).length||(d.instalado_materiales||[]).length){
+    secHeader('LO INSTALADO EN CAMPO — BOLETA ROSADA',VD);
+    if((d.instalado_equipos||[]).length){
+      y=mkTable(['#','Equipo','N° Serie','Cant.','Obs.'],
+        (d.instalado_equipos||[]).map((e,i)=>[i+1,e.desc,e.serie||'—',e.cant,e.obs||'']),VD,y);
+    }
+    if((d.instalado_materiales||[]).length){
+      y=mkTable(['#','Material','Unidad','Cant.','Obs.'],
+        (d.instalado_materiales||[]).map((m,i)=>[i+1,m.desc,m.unidad||'und',m.cant,m.obs||'']),VD,y);
+    }
+  }
+
+  // Devuelto
+  if((d.devuelto||[]).length){
+    secHeader('DEVUELTO A BODEGA — BOLETA VERDE',[100,100,100]);
+    y=mkTable(['#','Descripción','Unidad','Cant. devuelta','Metraje','Obs.'],
+      (d.devuelto||[]).map((v,i)=>[i+1,v.desc,v.unidad||'und',v.cant,v.metraje||'—',v.obs||'']),[100,100,100],y);
+  }
+
+  // Extras
+  if((d.extras_viaticos||[]).length){
+    secHeader('COMPRAS EXTRAS DE VIATICOS',NAR);
+    y=mkTable(['#','Descripción','Cant.','Obs.'],
+      (d.extras_viaticos||[]).map((e,i)=>[i+1,e.desc,e.cant,e.obs||'']),NAR,y);
+  }
+
+  // Alertas
+  if((d.alertas||[]).length){
+    if(y>220){doc.addPage();y=15;}
+    secHeader('DIFERENCIAS DETECTADAS POR IA',[180,50,50]);
+    const alertBody=(d.alertas||[]).map((a,i)=>[i+1,a.tipo.toUpperCase(),a.mensaje]);
+    y=mkTable(['#','Tipo','Detalle'],[...alertBody],[180,50,50],y);
+  }
+
+  // Observaciones
+  if(obs){
+    if(y>220){doc.addPage();y=15;}
+    doc.setFillColor(...AZC);doc.rect(15,y,TW,7,'F');
+    doc.setTextColor(0);doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text('OBSERVACIONES',17,y+5);y+=8;
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    const lines=doc.splitTextToSize(obs,TW-4);
+    doc.text(lines,17,y+4);y+=lines.length*5+8;
+  }
+
+  // Firmas
+  if(y>220){doc.addPage();y=15;}
+  doc.setFillColor(...AZ);doc.rect(15,y,TW,7,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);
+  doc.text('FIRMAS Y CONFORMIDAD',TW/2+15,y+4.5,{align:'center'});y+=9;
+  doc.autoTable({
+    body:[
+      [{content:'Entregado por:',styles:{fillColor:AZC,fontStyle:'bold'}},{content:'Recibido por (Operaciones):',styles:{fillColor:AZC,fontStyle:'bold'}}],
+      ['',''],
+      [{content:'Nombre: Cristobal del Cid',styles:{fillColor:GR2}},{content:'Nombre:',styles:{fillColor:GR2}}],
+      [{content:'Cargo: Almacen / Compras',styles:{fillColor:GR2}},{content:'Cargo:',styles:{fillColor:GR2}}],
+      ['Fecha / Firma: _______________','Fecha / Firma: _______________'],
+    ],
+    startY:y,margin:{left:15,right:15},
+    styles:{fontSize:9,cellPadding:5,valign:'middle',halign:'center'},
+    columnStyles:{0:{cellWidth:TW/2},1:{cellWidth:TW/2}}
+  });
+  y=doc.lastAutoTable.finalY+4;
+  doc.setFontSize(7);doc.setTextColor(150);
+  doc.text('Documento generado con IA — GEOINFORMATICA S.A. — conservar como respaldo del proyecto',15,y+4);
+
+  doc.save(`Finiquito_IA_${proyecto.replace(/\s+/g,'_')}_${fecha}.pdf`);
+  toast('✅ Finiquito PDF generado correctamente');
+}
+
+function reiniciar(){
+  archivos={1:null,2:[],3:[]};datosIA=null;
+  document.getElementById('paso1').style.display='';
+  document.getElementById('paso2').classList.remove('show');
+  document.getElementById('paso3').classList.remove('show');
+  setStep(1);
+  ['zone1','zone2','zone3'].forEach(id=>{
+    const z=document.getElementById(id);
+    z.classList.remove('has-file');
+    z.querySelector('.uz-icon').textContent=id==='zone1'?'📋':id==='zone2'?'🌸':'🟢';
+    const b=z.querySelector('.uz-badge');if(b)b.remove();
+  });
+  ['f1name','f2name','f3name'].forEach(id=>document.getElementById(id).textContent='');
+  ['f1','f2','f3'].forEach(id=>document.getElementById(id).value='');
+  verificarBoton();
+}
+</script>
+</body>
+</html>
