@@ -51,6 +51,10 @@ tr:hover td{background:var(--bg2)}
 .btn-ver{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
 .btn-pdf{background:#dc2626;color:#fff}
 .btn-dev{background:#f3e8ff;color:#6b21a8}
+.b-proy{background:#fef3e2;color:#92400e;border:1px solid #f59e0b}
+.fila-vencida td{background:#fff1f1!important}
+.fila-vencida td:first-child{border-left:3px solid #dc2626}
+.badge-vencida{display:inline-block;background:#dc2626;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:5px;vertical-align:middle}
 .empty{text-align:center;padding:40px;color:var(--text3)}
 .loading{text-align:center;padding:30px;color:var(--text3);font-size:14px}
 /* Modal */
@@ -108,6 +112,7 @@ tr:hover td{background:var(--bg2)}
     <button class="filter-btn" onclick="setFiltro('Pendiente',this)">Pendientes</button>
     <button class="filter-btn" onclick="setFiltro('Aprobada',this)">Aprobadas</button>
     <button class="filter-btn" onclick="setFiltro('Despachada',this)">Despachadas</button>
+    <button class="filter-btn" style="border-color:#f59e0b;color:#92400e" onclick="setFiltro('Proyecto',this)">🏗 Proyectos</button>
     <button class="btn-refresh" onclick="cargar()">↻ Actualizar</button>
     <button class="btn-export" onclick="exportarExcel()">📥 Exportar Excel</button>
   </div>
@@ -156,13 +161,23 @@ function setFiltro(f, btn) {
 }
 
 function renderTabla() {
-  const lista = filtro === 'Todos' ? todas : todas.filter(s => s.estado === filtro);
+  let lista;
+  if (filtro === 'Todos') lista = todas;
+  else if (filtro === 'Proyecto') lista = todas.filter(s => s.tipo === 'proyecto');
+  else lista = todas.filter(s => s.estado === filtro);
   const tbody = document.getElementById('tabla-body');
   if (!lista.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hay solicitudes.</td></tr>'; return; }
   tbody.innerHTML = lista.map(s => {
     const items = JSON.parse(s.items || '[]');
     const itemsStr = items.map(i => `${i.desc}(${i.qty} ${i.unidad})`).join(', ');
     const bc = s.estado === 'Pendiente' ? 'b-pend' : s.estado === 'Aprobada' ? 'b-apro' : s.estado === 'Despachada' ? 'b-desp' : 'b-dev';
+    const proyBadge = s.tipo === 'proyecto' ? ` <span class="badge b-proy">Proyecto</span>` : '';
+    let diasDesp = 0, filaVencida = '';
+    if (s.estado === 'Despachada' && s.despachado_en) {
+      diasDesp = Math.floor((Date.now() - new Date(s.despachado_en)) / 86400000);
+      if (diasDesp >= 3) filaVencida = 'fila-vencida';
+    }
+    const badgeVencida = filaVencida ? `<span class="badge-vencida">! ${diasDesp}d</span>` : '';
     let acc = `<button class="btn-action btn-ver" onclick="verDetalle('${s.id}')">Ver</button>`;
     if (s.estado === 'Pendiente') {
       acc += `<button class="btn-action btn-apro" onclick="cambiarEstado('${s.id}','Aprobada')">Aprobar</button>
@@ -177,8 +192,8 @@ function renderTabla() {
       acc += `<button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Despacho</button>
               <button class="btn-action btn-dev" onclick="verDevolucion('${s.id}')">📋 Ver devolución</button>`;
     }
-    return `<tr>
-      <td><b>${s.id}</b></td>
+    return `<tr class="${filaVencida}">
+      <td><b>${s.id}</b>${proyBadge}${badgeVencida}</td>
       <td>${s.fecha_requerida || '—'}</td>
       <td>${s.solicitante}</td>
       <td>${s.destino}</td>
