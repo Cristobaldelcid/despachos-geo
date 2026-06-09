@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Despacho — GEO</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#ebebea;
+  --text:#1a1a19;--text2:#5a5a57;--text3:#9a9894;
+  --border:#e0dedd;--border2:#c8c7c4;
+  --ok-bg:#eaf3de;--ok-text:#27500a;
+  --warn-bg:#faeeda;--warn-text:#633806;
+  --info-bg:#e6f1fb;--info-text:#0c447c;
+  --liq-bg:#fef3c7;--liq-text:#92400e;
+  --alerta-bg:#fee2e2;--alerta-text:#991b1b;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:var(--text);background:var(--bg3);min-height:100vh}
+.app{max-width:1100px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.header-left h1{font-size:19px;font-weight:700}
+.header-left p{font-size:12px;color:var(--text3);margin-top:2px}
+.badge-geo{background:#1a3a6b;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.stat-num{font-size:26px;font-weight:700;line-height:1}
+.stat-label{font-size:12px;color:var(--text2);margin-top:4px}
+.stat-pend .stat-num{color:#b45309}
+.stat-apro .stat-num{color:#15803d}
+.stat-desp .stat-num{color:#185FA5}
+.stat-liq .stat-num{color:#92400e}
+.stat-alerta .stat-num{color:#dc2626}
+.stat-total .stat-num{color:var(--text)}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:7px 14px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);cursor:pointer;font-size:13px;color:var(--text2)}
+.filter-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.btn-export{padding:8px 16px;border:none;border-radius:var(--radius);background:#15803d;color:#fff;font-size:13px;font-weight:500;cursor:pointer;margin-left:auto}
+.btn-refresh{padding:7px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);cursor:pointer;font-size:13px;color:var(--text2)}
+table{width:100%;border-collapse:collapse;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;font-size:13px}
+thead tr{background:var(--bg2);border-bottom:1px solid var(--border)}
+th{padding:10px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2)}
+tr.fila-alerta td{background:#fff5f5}
+tr.fila-alerta:hover td{background:#fee2e2}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.b-pend{background:var(--warn-bg);color:var(--warn-text)}
+.b-apro{background:var(--ok-bg);color:var(--ok-text)}
+.b-desp{background:var(--info-bg);color:var(--info-text)}
+.b-liq{background:var(--liq-bg);color:var(--liq-text)}
+.b-dev{background:#f3e8ff;color:#6b21a8}
+.alerta-tag{display:inline-block;background:var(--alerta-bg);color:var(--alerta-text);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px}
+.btn-action{padding:5px 10px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;margin-right:4px;margin-bottom:2px;display:inline-block}
+.btn-apro{background:var(--ok-bg);color:var(--ok-text)}
+.btn-desp{background:var(--info-bg);color:var(--info-text)}
+.btn-ver{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.btn-pdf{background:#dc2626;color:#fff}
+.btn-dev{background:#f3e8ff;color:#6b21a8}
+.b-proy{background:#fef3e2;color:#92400e;border:1px solid #f59e0b}
+.btn-liq{background:var(--liq-bg);color:var(--liq-text);border:1px solid #f59e0b}
+.empty{text-align:center;padding:40px;color:var(--text3)}
+.loading{text-align:center;padding:30px;color:var(--text3);font-size:14px}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;width:100%;max-width:620px;margin:auto}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mrow{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--border)}
+.mrow:last-of-type{border:none}
+.mrow span:first-child{color:var(--text2)}
+.mrow span:last-child{font-weight:500;text-align:right;max-width:65%}
+.mlabel{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+.modal-actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btn-sm{flex:1;min-width:80px;padding:9px 12px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:none}
+.btn-gray{background:var(--bg2);color:var(--text);border:1px solid var(--border2)}
+.btn-ok{background:#15803d;color:#fff}
+.btn-info{background:#185FA5;color:#fff}
+.btn-wa{background:#25D366;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+.btn-purple{background:#7c3aed;color:#fff}
+.btn-orange{background:#b45309;color:#fff}
+.btn-amber{background:#d97706;color:#fff}
+/* Firma */
+.firma-area{border:2px dashed var(--border2);border-radius:var(--radius);background:var(--bg2);margin:6px 0;position:relative;overflow:hidden;min-height:110px}
+.firma-area canvas{display:block;touch-action:none}
+.firma-label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text3);pointer-events:none;white-space:nowrap}
+.firma-btn-limpiar{padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--bg);cursor:pointer;font-size:11px;color:var(--text2);margin-bottom:4px}
+.nombre-tecnico-input{width:100%;border:1px solid var(--border2);border-radius:var(--radius);padding:8px 10px;font-size:13px;margin-top:4px;font-family:inherit}
+.nombre-tecnico-input:focus{outline:none;border-color:#185FA5;box-shadow:0 0 0 2px rgba(24,95,165,.15)}
+/* Devolución */
+.dev-table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+.dev-table th{background:var(--bg2);padding:8px 10px;text-align:left;font-size:11px;font-weight:700;color:var(--text3);border-bottom:1px solid var(--border)}
+.dev-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.dev-table input[type=number]{width:70px;border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:13px;text-align:center}
+.dev-result{font-weight:700;color:#185FA5}
+/* Liquidación */
+.liq-box{background:var(--liq-bg);border:1px solid #f59e0b;border-radius:var(--radius);padding:14px;margin-bottom:14px}
+.liq-box label{display:block;font-size:12px;font-weight:600;color:var(--liq-text);margin-bottom:5px}
+.liq-box input[type=text]{width:100%;border:1px solid #f59e0b;border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fff}
+.liq-box input:focus{outline:none;border-color:#b45309;box-shadow:0 0 0 2px rgba(180,83,9,.15)}
+.liq-check{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;font-weight:500;color:var(--liq-text);cursor:pointer}
+.liq-check input[type=checkbox]{width:16px;height:16px;cursor:pointer;accent-color:#d97706}
+/* Alerta */
+.alerta-banner{background:var(--alerta-bg);border:1px solid #fca5a5;border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--alerta-text);display:flex;align-items:center;gap:8px}
+.toast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a19;color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:13px;z-index:999}
+.toast.show{display:block}
+@media(max-width:700px){.stats{grid-template-columns:1fr 1fr}table{font-size:12px}th,td{padding:8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="header-left">
+      <h1>🗂 Control de despacho</h1>
+      <p>GEOINFORMATICA S.A. — Panel de administración</p>
+    </div>
+    <span class="badge-geo">GEO</span>
+  </header>
+  <div class="stats">
+    <div class="stat stat-total"><div class="stat-num" id="s-total">—</div><div class="stat-label">Total solicitudes</div></div>
+    <div class="stat stat-pend"><div class="stat-num" id="s-pend">—</div><div class="stat-label">Pendientes</div></div>
+    <div class="stat stat-apro"><div class="stat-num" id="s-apro">—</div><div class="stat-label">Aprobadas</div></div>
+    <div class="stat stat-desp"><div class="stat-num" id="s-desp">—</div><div class="stat-label">Despachadas</div></div>
+    <div class="stat stat-alerta"><div class="stat-num" id="s-alerta">—</div><div class="stat-label">⚠ Sin liquidar +3 días</div></div>
+  </div>
+  <div id="banner-alertas"></div>
+  <div class="toolbar">
+    <button class="filter-btn active" onclick="setFiltro('Todos',this)">Todos</button>
+    <button class="filter-btn" onclick="setFiltro('Pendiente',this)">Pendientes</button>
+    <button class="filter-btn" onclick="setFiltro('Aprobada',this)">Aprobadas</button>
+    <button class="filter-btn" onclick="setFiltro('Despachada',this)">Despachadas</button>
+    <button class="filter-btn" style="border-color:#f59e0b;color:#92400e" onclick="setFiltro('Proyecto',this)">🏗 Proyectos</button>
+    <button class="filter-btn" onclick="setFiltro('Liquidada',this)">Liquidadas</button>
+    <button class="filter-btn" onclick="setFiltro('Devuelta',this)">Devueltas</button>
+    <button class="btn-refresh" onclick="cargar()">↻ Actualizar</button>
+    <button class="btn-export" onclick="exportarExcel()">📥 Exportar Excel</button>
+  </div>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Fecha req.</th><th>Solicitante</th><th>Destino</th><th>Artículos</th><th>Estado</th><th>Acciones</th></tr>
+    </thead>
+    <tbody id="tabla-body"><tr><td colspan="7" class="loading">Cargando...</td></tr></tbody>
+  </table>
+</div>
+<div class="modal-overlay" id="modal-overlay" onclick="cerrarModal(event)">
+  <div class="modal" id="modal-inner"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+<script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let todas = [];
+let filtro = 'Todos';
+let isDrawing = false, lastX = 0, lastY = 0, firmaActiva = null;
+
+// ===== ALERTA 3 DÍAS =====
+function diasSinLiquidar(s) {
+  if (s.estado !== 'Despachada' || !s.despachado_en) return 0;
+  return Math.floor((Date.now() - new Date(s.despachado_en).getTime()) / (1000*60*60*24));
+}
+function esAlerta(s) { return diasSinLiquidar(s) >= 3; }
+
+// ===== CARGA =====
+async function cargar() {
+  const { data, error } = await sb.from('solicitudes').select('*').order('correlativo', { ascending: false });
+  if (error) { toast('❌ Error al cargar datos'); return; }
+  todas = data || [];
+  actualizarStats();
+  renderBannerAlertas();
+  renderTabla();
+}
+
+function actualizarStats() {
+  document.getElementById('s-total').textContent = todas.length;
+  document.getElementById('s-pend').textContent = todas.filter(s => s.estado === 'Pendiente').length;
+  document.getElementById('s-apro').textContent = todas.filter(s => s.estado === 'Aprobada').length;
+  document.getElementById('s-desp').textContent = todas.filter(s => s.estado === 'Despachada').length;
+  document.getElementById('s-alerta').textContent = todas.filter(esAlerta).length;
+}
+
+function renderBannerAlertas() {
+  const alertas = todas.filter(esAlerta);
+  const cont = document.getElementById('banner-alertas');
+  if (!alertas.length) { cont.innerHTML = ''; return; }
+  const lista = alertas.map(s => `<b>${s.id}</b> (${s.solicitante} — ${diasSinLiquidar(s)} días)`).join(', ');
+  cont.innerHTML = `<div class="alerta-banner">⚠️ <span><b>${alertas.length} despacho${alertas.length>1?'s':''} sin liquidar con más de 3 días:</b> ${lista}</span></div>`;
+}
+
+function setFiltro(f, btn) {
+  filtro = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTabla();
+}
+
+function renderTabla() {
+  let lista;
+  if (filtro === 'Todos') lista = todas;
+  else if (filtro === 'Proyecto') lista = todas.filter(s => s.tipo === 'proyecto');
+  else lista = todas.filter(s => s.estado === filtro);
+  const tbody = document.getElementById('tabla-body');
+  if (!lista.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty">No hay solicitudes.</td></tr>'; return; }
+  tbody.innerHTML = lista.map(s => {
+    const items = JSON.parse(s.items || '[]');
+    const itemsStr = items.map(i => `${i.desc}(${i.qty} ${i.unidad})`).join(', ');
+    const alerta = esAlerta(s);
+    const bc = s.estado==='Pendiente'?'b-pend':s.estado==='Aprobada'?'b-apro':s.estado==='Despachada'?'b-desp':s.estado==='Liquidada'?'b-liq':'b-dev';
+    const alertaTag = alerta ? `<span class="alerta-tag">⚠ ${diasSinLiquidar(s)}d</span>` : '';
+    let acc = `<button class="btn-action btn-ver" onclick="verDetalle('${s.id}')">Ver</button>`;
+    if (s.estado === 'Pendiente') {
+      acc += `<button class="btn-action btn-apro" onclick="cambiarEstado('${s.id}','Aprobada')">Aprobar</button>
+              <button class="btn-action btn-desp" onclick="cambiarEstado('${s.id}','Despachada')">Despachar</button>`;
+    } else if (s.estado === 'Aprobada') {
+      acc += `<button class="btn-action btn-desp" onclick="cambiarEstado('${s.id}','Despachada')">Despachar</button>
+              <button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>`;
+    } else if (s.estado === 'Despachada') {
+      acc += `<button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>
+              <button class="btn-action btn-liq" onclick="abrirLiquidacion('${s.id}')">📋 Liquidar</button>
+              <button class="btn-action btn-dev" onclick="abrirDevolucion('${s.id}')">↩ Devolución</button>`;
+    } else if (s.estado === 'Liquidada') {
+      acc += `<button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Despacho</button>
+              <button class="btn-action btn-liq" onclick="verLiquidacion('${s.id}')">📋 Ver liquidación</button>`;
+    } else if (s.estado === 'Devuelta') {
+      acc += `<button class="btn-action btn-pdf" onclick="abrirFirmaDespacho('${s.id}')">📄 Despacho</button>
+              <button class="btn-action btn-dev" onclick="verDevolucion('${s.id}')">📋 Ver devolución</button>`;
+    }
+    return `<tr class="${alerta?'fila-alerta':''}">
+      <td><b>${s.id}</b>${s.tipo==="proyecto"?` <span class="badge b-proy">Proyecto</span>`:''} ${alertaTag}</td>
+      <td>${s.fecha_requerida||'—'}</td>
+      <td>${s.solicitante}</td>
+      <td>${s.destino}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${itemsStr}">${itemsStr}</td>
+      <td><span class="badge ${bc}">${s.estado}</span></td>
+      <td>${acc}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function cambiarEstado(id, estado) {
+  const campo = estado==='Aprobada'?{estado,aprobado_en:new Date().toISOString()}:{estado,despachado_en:new Date().toISOString()};
+  const {error} = await sb.from('solicitudes').update(campo).eq('id',id);
+  if (error) { toast('❌ Error al actualizar'); return; }
+  toast(`✅ Solicitud ${id} marcada como ${estado}`);
+  cargar();
+}
+
+// ===== VER DETALLE =====
+function verDetalle(id) {
+  const s = todas.find(x => x.id===id);
+  if (!s) return;
+  const items = JSON.parse(s.items||'[]');
+  const bc = s.estado==='Pendiente'?'b-pend':s.estado==='Aprobada'?'b-apro':s.estado==='Despachada'?'b-desp':s.estado==='Liquidada'?'b-liq':'b-dev';
+  const msgEnc = encodeURIComponent(buildMsg(s));
+  const alerta = esAlerta(s);
+  const liqData = s.liquidacion ? JSON.parse(s.liquidacion) : null;
+  let botones = `<button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>`;
+  if (s.estado==='Pendiente') {
+    botones += `<button class="btn-sm btn-ok" onclick="cambiarEstado('${s.id}','Aprobada');cerrarModalBtn()">Aprobar</button>
+                <button class="btn-sm btn-info" onclick="cambiarEstado('${s.id}','Despachada');cerrarModalBtn()">Despachar</button>`;
+  } else if (s.estado==='Aprobada') {
+    botones += `<button class="btn-sm btn-info" onclick="cambiarEstado('${s.id}','Despachada');cerrarModalBtn()">Despachar</button>
+                <button class="btn-sm btn-red" onclick="cerrarModalBtn();abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>`;
+  } else if (s.estado==='Despachada') {
+    botones += `<button class="btn-sm btn-red" onclick="cerrarModalBtn();abrirFirmaDespacho('${s.id}')">📄 Hoja PDF</button>
+                <button class="btn-sm btn-amber" onclick="cerrarModalBtn();abrirLiquidacion('${s.id}')">📋 Liquidar</button>
+                <button class="btn-sm btn-purple" onclick="cerrarModalBtn();abrirDevolucion('${s.id}')">↩ Devolución</button>`;
+  } else if (s.estado==='Liquidada') {
+    botones += `<button class="btn-sm btn-red" onclick="cerrarModalBtn();abrirFirmaDespacho('${s.id}')">📄 Despacho</button>
+                <button class="btn-sm btn-amber" onclick="cerrarModalBtn();verLiquidacion('${s.id}')">📋 Ver liquidación</button>`;
+  } else if (s.estado==='Devuelta') {
+    botones += `<button class="btn-sm btn-red" onclick="cerrarModalBtn();abrirFirmaDespacho('${s.id}')">📄 Despacho</button>
+                <button class="btn-sm btn-purple" onclick="cerrarModalBtn();verDevolucion('${s.id}')">📋 Ver devolución</button>`;
+  }
+  botones += `<button class="btn-sm btn-wa" onclick="window.open('https://wa.me/50231117277?text=${msgEnc}','_blank')">📲 WA</button>`;
+  document.getElementById('modal-inner').innerHTML = `
+    <h3>${s.id} <span class="badge ${bc}">${s.estado}</span>${alerta?`<span class="alerta-tag">⚠ ${diasSinLiquidar(s)} días sin liquidar</span>`:''}</h3>
+    <div class="mrow"><span>Solicitante</span><span>${s.solicitante}</span></div>
+    ${s.nombre_tecnico?`<div class="mrow"><span>Nombre técnico (firmó)</span><span>${s.nombre_tecnico}</span></div>`:''}
+    <div class="mrow"><span>Bodega origen</span><span>${s.origen}</span></div>
+    <div class="mrow"><span>Destino</span><span>${s.destino}</span></div>
+    <div class="mrow"><span>Fecha requerida</span><span>${s.fecha_requerida||'—'}</span></div>
+    ${s.observaciones?`<div class="mrow"><span>Observaciones</span><span>${s.observaciones}</span></div>`:''}
+    ${s.aprobado_en?`<div class="mrow"><span>Aprobado</span><span>${new Date(s.aprobado_en).toLocaleString('es')}</span></div>`:''}
+    ${s.despachado_en?`<div class="mrow"><span>Despachado</span><span>${new Date(s.despachado_en).toLocaleString('es')}</span></div>`:''}
+    ${liqData?`<div class="mrow"><span>Boleta(s)</span><span>${liqData.boletas}</span></div>
+    <div class="mrow"><span>Hubo devolución</span><span>${liqData.hubo_devolucion?'✅ Sí':'❌ No'}</span></div>`:''}
+    <div class="mlabel">Artículos</div>
+    ${items.map(i=>`<div class="mrow"><span>${i.desc}</span><span>${i.qty} ${i.unidad}</span></div>`).join('')}
+    <div class="modal-actions">${botones}</div>`;
+  abrirModalOverlay();
+}
+
+// ===== FIRMA DE DESPACHO =====
+function infoHTML(s) {
+  const items = JSON.parse(s.items||'[]');
+  return `<div style="background:var(--bg2);border-radius:var(--radius);padding:12px;margin-bottom:12px;font-size:13px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <div><b>ID:</b> ${s.id}</div><div><b>Fecha:</b> ${s.fecha_requerida||'—'}</div>
+      <div><b>Solicitante:</b> ${s.solicitante}</div><div><b>Destino:</b> ${s.destino}</div>
+      <div><b>Origen:</b> ${s.origen}</div>
+      ${s.observaciones?`<div><b>Obs:</b> ${s.observaciones}</div>`:''}
+    </div>
+    <div style="margin-top:8px;font-size:12px;color:var(--text2)">
+      ${items.map((i,n)=>`${n+1}. ${i.desc} — ${i.qty} ${i.unidad}`).join(' | ')}
+    </div>
+  </div>`;
+}
+
+function abrirFirmaDespacho(id) {
+  const s = todas.find(x => x.id===id);
+  if (!s) return;
+  if (s.firma_entrega||s.firma_recibe) {
+    document.getElementById('modal-inner').innerHTML = `
+      <h3>📄 Hoja de Despacho — ${s.id}</h3>
+      <div style="background:var(--ok-bg);border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--ok-text)">
+        ✅ Firmas guardadas.${s.nombre_tecnico?` Técnico: <b>${s.nombre_tecnico}</b>`:''}
+      </div>
+      ${infoHTML(s)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <div class="mlabel">Firma — Entrega (Luis)</div>
+          <div class="firma-area" style="padding:8px">
+            ${s.firma_entrega?`<img src="${s.firma_entrega}" style="max-width:100%;height:90px;object-fit:contain">`:'<div style="height:90px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>'}
+          </div>
+        </div>
+        <div>
+          <div class="mlabel">Firma — Recibe (Técnico)</div>
+          <div class="firma-area" style="padding:8px">
+            ${s.firma_recibe?`<img src="${s.firma_recibe}" style="max-width:100%;height:90px;object-fit:contain">`:'<div style="height:90px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>'}
+          </div>
+          ${s.nombre_tecnico?`<div style="text-align:center;margin-top:4px;font-size:12px;font-weight:600;color:var(--text2)">${s.nombre_tecnico}</div>`:''}
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
+        <button class="btn-sm btn-orange" onclick="resetFirmas('${s.id}')">🔄 Refirmar</button>
+        <button class="btn-sm btn-red" onclick="generarPDFDespacho('${s.id}')">🖨 Imprimir / PDF</button>
+      </div>`;
+    abrirModalOverlay();
+  } else {
+    document.getElementById('modal-inner').innerHTML = `
+      <h3>📄 Hoja de Despacho — ${s.id}</h3>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">El técnico debe firmar y escribir su nombre.</p>
+      ${infoHTML(s)}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div class="mlabel">✍ Firma — Entrega (Luis)</div>
+          <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-entrega')">Limpiar</button>
+          <div class="firma-area"><canvas id="c-entrega" width="260" height="100"></canvas><span class="firma-label">Firma de entrega</span></div>
+        </div>
+        <div>
+          <div class="mlabel">✍ Firma — Recibe (Técnico)</div>
+          <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-recibe')">Limpiar</button>
+          <div class="firma-area"><canvas id="c-recibe" width="260" height="100"></canvas><span class="firma-label">Firma de recepción</span></div>
+          <div class="mlabel" style="margin-top:10px">📝 Nombre del técnico</div>
+          <input type="text" id="nombre-tecnico" class="nombre-tecnico-input" placeholder="Ej: Carlos Batres" autocomplete="off">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
+        <button class="btn-sm btn-ok" onclick="guardarYGenerarPDF('${s.id}')">💾 Guardar y generar PDF</button>
+      </div>`;
+    abrirModalOverlay();
+    setTimeout(()=>{iniciarCanvas('c-entrega');iniciarCanvas('c-recibe');},100);
+  }
+}
+
+async function resetFirmas(id) {
+  if (!confirm('¿Borrar firmas para volver a firmar?')) return;
+  const {error} = await sb.from('solicitudes').update({firma_entrega:null,firma_recibe:null,nombre_tecnico:null}).eq('id',id);
+  if (error){toast('❌ Error');return;}
+  await cargar(); abrirFirmaDespacho(id);
+}
+
+async function guardarYGenerarPDF(id) {
+  const fe = canvasToBase64('c-entrega');
+  const fr = canvasToBase64('c-recibe');
+  const nombre = document.getElementById('nombre-tecnico')?.value?.trim()||'';
+  if (!fe&&!fr){toast('⚠ Dibujá al menos una firma');return;}
+  const {error} = await sb.from('solicitudes').update({firma_entrega:fe,firma_recibe:fr,nombre_tecnico:nombre||null}).eq('id',id);
+  if (error){toast('❌ Error al guardar firmas');return;}
+  toast('✅ Firmas guardadas');
+  await cargar();
+  const s = todas.find(x=>x.id===id);
+  if (s) imprimirDespacho(s,fe,fr,nombre);
+  cerrarModalBtn();
+}
+
+function generarPDFDespacho(id) {
+  const s = todas.find(x=>x.id===id);
+  if (s) imprimirDespacho(s,s.firma_entrega,s.firma_recibe,s.nombre_tecnico);
+}
+
+function imprimirDespacho(s,fe,fr,nombreTec) {
+  const items = JSON.parse(s.items||'[]');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Despacho ${s.id}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:12px;padding:20px}
+  .hdr{background:#1a3a6b;color:#fff;padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .hdr h1{font-size:15px}.hdr p{font-size:10px;opacity:.8;margin-top:2px}
+  .badge{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .info{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#dce6f1;padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px}
+  th{background:#1a3a6b;color:#fff;padding:7px 10px;text-align:left;font-size:10px}
+  td{padding:6px 10px;border-bottom:1px solid #e0dedd;font-size:11px}
+  tr:nth-child(even)td{background:#f5f5f3}
+  .firmas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+  .fbox{border:1px solid #ccc;border-radius:6px;padding:10px;text-align:center}
+  .ftit{font-size:10px;font-weight:700;color:#5a5a57;text-transform:uppercase;margin-bottom:6px}
+  .fimg{max-width:100%;height:70px;object-fit:contain}
+  .fnombre{font-size:11px;font-weight:700;color:#1a1a19;margin-top:6px;border-top:1px solid #ccc;padding-top:4px}
+  .fline{border-top:1px solid #999;margin-top:36px;padding-top:4px;font-size:9px;color:#777}
+  .foot{margin-top:12px;font-size:9px;color:#777;text-align:center;border-top:1px solid #eee;padding-top:8px}
+  @media print{.hdr,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
+  <div class="hdr"><div><h1>HOJA DE DESPACHO</h1><p>GEOINFORMATICA S.A.</p></div><span class="badge">${s.id}</span></div>
+  <div class="info">
+    <div><b>Solicitante:</b> ${s.solicitante}</div><div><b>Fecha requerida:</b> ${s.fecha_requerida||'—'}</div>
+    <div><b>Bodega origen:</b> ${s.origen}</div><div><b>Destino:</b> ${s.destino}</div>
+    ${s.observaciones?`<div style="grid-column:1/-1"><b>Obs:</b> ${s.observaciones}</div>`:''}
+  </div>
+  <table><thead><tr><th>#</th><th>Descripción</th><th>Unidad</th><th>Cantidad</th></tr></thead>
+  <tbody>${items.map((i,n)=>`<tr><td>${n+1}</td><td>${i.desc}</td><td>${i.unidad}</td><td><b>${i.qty}</b></td></tr>`).join('')}</tbody></table>
+  <div class="firmas">
+    <div class="fbox"><div class="ftit">Entregado por (Bodega)</div>${fe?`<img class="fimg" src="${fe}">`:''}
+      <div class="fline">Nombre y firma / Fecha</div></div>
+    <div class="fbox"><div class="ftit">Recibido por (Técnico)</div>${fr?`<img class="fimg" src="${fr}">`:''}
+      ${nombreTec?`<div class="fnombre">${nombreTec}</div>`:'<div class="fline">Nombre y firma / Fecha</div>'}
+    </div>
+  </div>
+  <div class="foot">Generado el ${new Date().toLocaleString('es')} — GEOINFORMATICA S.A.</div>
+  <script>window.onload=()=>window.print()<\/script></body></html>`;
+  const w=window.open('','_blank'); w.document.write(html); w.document.close();
+}
+
+// ===== LIQUIDACIÓN =====
+function abrirLiquidacion(id) {
+  const s = todas.find(x=>x.id===id);
+  if (!s) return;
+  const dias = diasSinLiquidar(s);
+  document.getElementById('modal-inner').innerHTML = `
+    <h3>📋 Liquidar Despacho — ${s.id}</h3>
+    ${dias>=3?`<div class="alerta-banner" style="margin-bottom:12px">⚠️ Este despacho lleva <b>${dias} días</b> sin liquidar.</div>`:''}
+    <div style="background:var(--bg2);border-radius:var(--radius);padding:10px 12px;margin-bottom:14px;font-size:13px">
+      <div><b>Solicitante:</b> ${s.solicitante}${s.nombre_tecnico?` (${s.nombre_tecnico})`:''}</div>
+      <div style="margin-top:4px"><b>Destino:</b> ${s.destino}</div>
+      <div style="margin-top:4px"><b>Despachado:</b> ${s.despachado_en?new Date(s.despachado_en).toLocaleDateString('es'):'—'}</div>
+    </div>
+    <div class="liq-box">
+      <label>📄 Número(s) de boleta de trabajo <span style="color:#dc2626">*</span></label>
+      <input type="text" id="liq-boletas" placeholder="Ej: 1234, 1235" autocomplete="off">
+      <p style="font-size:11px;color:#92400e;margin-top:5px">Si son varias boletas, separarlas con coma.</p>
+      <label class="liq-check">
+        <input type="checkbox" id="liq-devolucion"> ↩ Hubo devolución de equipo/material
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cancelar</button>
+      <button class="btn-sm btn-amber" onclick="guardarLiquidacion('${s.id}')">💾 Guardar liquidación</button>
+    </div>`;
+  abrirModalOverlay();
+}
+
+async function guardarLiquidacion(id) {
+  const boletas = document.getElementById('liq-boletas')?.value?.trim();
+  if (!boletas){toast('⚠ Ingresá el número de boleta');return;}
+  const hubo = document.getElementById('liq-devolucion')?.checked||false;
+  const liqData = {boletas,hubo_devolucion:hubo,fecha:new Date().toISOString()};
+  const {error} = await sb.from('solicitudes').update({liquidacion:JSON.stringify(liqData),estado:'Liquidada'}).eq('id',id);
+  if (error){toast('❌ Error al guardar liquidación');return;}
+  toast(`✅ Solicitud ${id} liquidada`);
+  cerrarModalBtn(); cargar();
+}
+
+function verLiquidacion(id) {
+  const s = todas.find(x=>x.id===id);
+  if (!s||!s.liquidacion){toast('No hay liquidación registrada');return;}
+  const liq = JSON.parse(s.liquidacion);
+  document.getElementById('modal-inner').innerHTML = `
+    <h3>📋 Liquidación — ${s.id}</h3>
+    <div style="background:var(--liq-bg);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px;border:1px solid #f59e0b">
+      <div class="mrow" style="border-bottom:1px solid #f59e0b"><span style="color:#92400e">Fecha liquidación</span><span>${new Date(liq.fecha).toLocaleString('es')}</span></div>
+      <div class="mrow" style="border-bottom:1px solid #f59e0b"><span style="color:#92400e">Solicitante</span><span>${s.solicitante}${s.nombre_tecnico?' — '+s.nombre_tecnico:''}</span></div>
+      <div class="mrow" style="border-bottom:1px solid #f59e0b"><span style="color:#92400e">Destino</span><span>${s.destino}</span></div>
+      <div class="mrow" style="border-bottom:1px solid #f59e0b"><span style="color:#92400e">Boleta(s)</span><span style="font-weight:700;font-size:15px">${liq.boletas}</span></div>
+      <div class="mrow" style="border:none"><span style="color:#92400e">Hubo devolución</span><span>${liq.hubo_devolucion?'✅ Sí':'❌ No'}</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
+      <button class="btn-sm btn-orange" onclick="cerrarModalBtn();setTimeout(()=>abrirLiquidacion('${s.id}'),200)">✏️ Editar</button>
+    </div>`;
+  abrirModalOverlay();
+}
+
+// ===== DEVOLUCIÓN =====
+function abrirDevolucion(id) {
+  const s = todas.find(x=>x.id===id);
+  if (!s) return;
+  const items = JSON.parse(s.items||'[]');
+  const filas = items.map((item,i)=>`
+    <tr>
+      <td>${item.desc}</td>
+      <td style="text-align:center">${item.unidad}</td>
+      <td style="text-align:center"><b>${item.qty}</b></td>
+      <td style="text-align:center"><input type="number" id="usado_${i}" value="${item.qty}" min="0" max="${item.qty}" oninput="calcDev(${i},${item.qty})"></td>
+      <td style="text-align:center" id="dev_${i}" class="dev-result">0</td>
+    </tr>`).join('');
+  document.getElementById('modal-inner').innerHTML = `
+    <h3>↩ Devolución — ${s.id}</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Ingresá cuánto se <b>usó</b>. La cantidad a devolver se calcula sola.</p>
+    <table class="dev-table">
+      <thead><tr><th>Artículo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>A devolver</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+      <div>
+        <div class="mlabel">✍ Firma — Devuelve (Técnico)</div>
+        <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-dev-tec')">Limpiar</button>
+        <div class="firma-area"><canvas id="c-dev-tec" width="260" height="90"></canvas><span class="firma-label">Técnico que devuelve</span></div>
+      </div>
+      <div>
+        <div class="mlabel">✍ Firma — Recibe bodega (Luis)</div>
+        <button class="firma-btn-limpiar" onclick="limpiarCanvas('c-dev-bod')">Limpiar</button>
+        <div class="firma-area"><canvas id="c-dev-bod" width="260" height="90"></canvas><span class="firma-label">Bodega que recibe</span></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cancelar</button>
+      <button class="btn-sm btn-red" onclick="imprimirDevolucion('${s.id}')">🖨 Hoja PDF</button>
+      <button class="btn-sm btn-purple" onclick="guardarDevolucion('${s.id}')">💾 Guardar devolución</button>
+    </div>`;
+  abrirModalOverlay();
+  setTimeout(()=>{
+    items.forEach((_,i)=>calcDev(i,items[i].qty));
+    iniciarCanvas('c-dev-tec'); iniciarCanvas('c-dev-bod');
+  },100);
+}
+
+function calcDev(i,total) {
+  const usado = parseFloat(document.getElementById(`usado_${i}`)?.value)||0;
+  const dev = Math.max(0,total-usado);
+  const el = document.getElementById(`dev_${i}`);
+  if (el){el.textContent=dev;el.style.color=dev>0?'#185FA5':'#15803d';}
+}
+
+function getDevItems(id) {
+  const s = todas.find(x=>x.id===id);
+  if (!s) return [];
+  return JSON.parse(s.items||'[]').map((item,i)=>{
+    const usado = parseFloat(document.getElementById(`usado_${i}`)?.value)||0;
+    return {desc:item.desc,unidad:item.unidad,despachado:item.qty,usado,devuelve:Math.max(0,item.qty-usado)};
+  });
+}
+
+async function guardarDevolucion(id) {
+  const devItems = getDevItems(id);
+  const ft = canvasToBase64('c-dev-tec');
+  const fb = canvasToBase64('c-dev-bod');
+  const devData = {items:devItems,fecha:new Date().toISOString(),firma_tecnico:ft,firma_bodega:fb};
+  const {error} = await sb.from('solicitudes').update({devolucion:JSON.stringify(devData),estado:'Devuelta'}).eq('id',id);
+  if (error){toast('❌ Error al guardar devolución');return;}
+  toast('✅ Devolución registrada');
+  cerrarModalBtn(); cargar();
+}
+
+function imprimirDevolucion(id) {
+  const s = todas.find(x=>x.id===id);
+  if (!s) return;
+  const devItems = getDevItems(id);
+  const ft = canvasToBase64('c-dev-tec');
+  const fb = canvasToBase64('c-dev-bod');
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolución ${s.id}</title>
+  <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:12px;padding:20px}
+  .hdr{background:#7c3aed;color:#fff;padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .hdr h1{font-size:15px}.badge{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .info{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f3e8ff;padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px}
+  th{background:#7c3aed;color:#fff;padding:7px 10px;text-align:left;font-size:10px}
+  td{padding:6px 10px;border-bottom:1px solid #e0dedd;font-size:11px;text-align:center}td:first-child{text-align:left}
+  tr:nth-child(even)td{background:#f5f5f3}
+  .dev-si{color:#185FA5;font-weight:700}.dev-no{color:#9a9894}
+  .firmas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+  .fbox{border:1px solid #ccc;border-radius:6px;padding:10px;text-align:center}
+  .ftit{font-size:10px;font-weight:700;color:#5a5a57;text-transform:uppercase;margin-bottom:6px}
+  .fimg{max-width:100%;height:70px;object-fit:contain}
+  .fline{border-top:1px solid #999;margin-top:40px;padding-top:4px;font-size:9px;color:#777}
+  .foot{margin-top:12px;font-size:9px;color:#777;text-align:center;border-top:1px solid #eee;padding-top:8px}
+  @media print{.hdr,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>
+  <div class="hdr"><div><h1>DEVOLUCIÓN DE MATERIALES Y EQUIPOS</h1><p>GEOINFORMATICA S.A.</p></div><span class="badge">${s.id}</span></div>
+  <div class="info">
+    <div><b>Referencia:</b> ${s.id}</div><div><b>Fecha:</b> ${new Date().toLocaleDateString('es')}</div>
+    <div><b>Técnico:</b> ${s.nombre_tecnico||s.solicitante}</div><div><b>Proyecto:</b> ${s.destino}</div>
+  </div>
+  <table><thead><tr><th>Artículo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>Devuelve</th></tr></thead>
+  <tbody>${devItems.map(i=>`<tr><td>${i.desc}</td><td>${i.unidad}</td><td>${i.despachado}</td><td>${i.usado}</td><td class="${i.devuelve>0?'dev-si':'dev-no'}">${i.devuelve>0?i.devuelve:'—'}</td></tr>`).join('')}</tbody></table>
+  <div class="firmas">
+    <div class="fbox"><div class="ftit">Devuelve (Técnico)</div>${ft?`<img class="fimg" src="${ft}">`:''}
+    <div class="fline">Nombre y firma / Fecha</div></div>
+    <div class="fbox"><div class="ftit">Recibe bodega (Luis)</div>${fb?`<img class="fimg" src="${fb}">`:''}
+    <div class="fline">Nombre y firma / Fecha</div></div>
+  </div>
+  <div class="foot">Generado el ${new Date().toLocaleString('es')} — GEOINFORMATICA S.A.</div>
+  <script>window.onload=()=>window.print()<\/script></body></html>`;
+  const w=window.open('','_blank'); w.document.write(html); w.document.close();
+}
+
+function verDevolucion(id) {
+  const s = todas.find(x=>x.id===id);
+  if (!s||!s.devolucion){toast('No hay devolución registrada');return;}
+  const dev = JSON.parse(s.devolucion);
+  const items = dev.items||[];
+  const fecha = dev.fecha?new Date(dev.fecha).toLocaleString('es'):'—';
+  document.getElementById('modal-inner').innerHTML = `
+    <h3>📋 Devolución — ${s.id}</h3>
+    <div style="background:#f3e8ff;border-radius:var(--radius);padding:8px 12px;margin-bottom:12px;font-size:12px;color:#6b21a8">
+      Registrada el ${fecha}
+    </div>
+    <table class="dev-table">
+      <thead><tr><th>Artículo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>Devuelto</th></tr></thead>
+      <tbody>${items.map(i=>'<tr><td>'+i.desc+'</td><td style="text-align:center">'+i.unidad+'</td><td style="text-align:center">'+i.despachado+'</td><td style="text-align:center">'+i.usado+'</td><td style="text-align:center;font-weight:700;color:'+(i.devuelve>0?'#185FA5':'#15803d')+'">'+(i.devuelve>0?i.devuelve:'—')+'</td></tr>').join('')}</tbody>
+    </table>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">
+      <div>
+        <div class="mlabel">Firma — Técnico que devolvió</div>
+        <div class="firma-area" style="padding:8px;min-height:90px">
+          ${dev.firma_tecnico?'<img src="'+dev.firma_tecnico+'" style="max-width:100%;height:80px;object-fit:contain">':`<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>`}
+        </div>
+      </div>
+      <div>
+        <div class="mlabel">Firma — Bodega que recibió</div>
+        <div class="firma-area" style="padding:8px;min-height:90px">
+          ${dev.firma_bodega?'<img src="'+dev.firma_bodega+'" style="max-width:100%;height:80px;object-fit:contain">':`<div style="height:80px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px">Sin firma</div>`}
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-gray" onclick="cerrarModalBtn()">Cerrar</button>
+      <button class="btn-sm btn-red" onclick="imprimirDevGuardada('${s.id}')">🖨 Imprimir</button>
+    </div>`;
+  abrirModalOverlay();
+}
+
+function imprimirDevGuardada(id) {
+  const s = todas.find(x=>x.id===id);
+  if (!s||!s.devolucion) return;
+  const dev = JSON.parse(s.devolucion);
+  const rows = (dev.items||[]).map(i=>'<tr><td>'+i.desc+'</td><td>'+i.unidad+'</td><td>'+i.despachado+'</td><td>'+i.usado+'</td><td class="'+(i.devuelve>0?'dev-si':'dev-no')+'">'+(i.devuelve>0?i.devuelve:'—')+'</td></tr>').join('');
+  const ft = dev.firma_tecnico?'<img class="fimg" src="'+dev.firma_tecnico+'">'  :'';
+  const fb = dev.firma_bodega ?'<img class="fimg" src="'+dev.firma_bodega+'">'  :'';
+  const fecha = dev.fecha?new Date(dev.fecha).toLocaleString('es'):'—';
+  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolucion '+s.id+'</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:Arial,sans-serif;font-size:12px;padding:20px}.hdr{background:#7c3aed;color:#fff;padding:12px 16px;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:15px}.badge{background:rgba(255,255,255,.2);padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}.info{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f3e8ff;padding:10px;border-radius:6px;margin-bottom:12px;font-size:11px}table{width:100%;border-collapse:collapse;margin-bottom:14px}th{background:#7c3aed;color:#fff;padding:7px 10px;text-align:left;font-size:10px}td{padding:6px 10px;border-bottom:1px solid #e0dedd;font-size:11px;text-align:center}td:first-child{text-align:left}tr:nth-child(even)td{background:#f5f5f3}.dev-si{color:#185FA5;font-weight:700}.dev-no{color:#9a9894}.firmas{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}.fbox{border:1px solid #ccc;border-radius:6px;padding:10px;text-align:center}.ftit{font-size:10px;font-weight:700;color:#5a5a57;text-transform:uppercase;margin-bottom:6px}.fimg{max-width:100%;height:70px;object-fit:contain}.fline{border-top:1px solid #999;margin-top:40px;padding-top:4px;font-size:9px;color:#777}.foot{margin-top:12px;font-size:9px;color:#777;text-align:center;border-top:1px solid #eee;padding-top:8px}@media print{.hdr,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body><div class="hdr"><div><h1>DEVOLUCION DE MATERIALES Y EQUIPOS</h1><p>GEOINFORMATICA S.A.</p></div><span class="badge">'+s.id+'</span></div><div class="info"><div><b>Referencia:</b> '+s.id+'</div><div><b>Fecha:</b> '+fecha+'</div><div><b>Tecnico:</b> '+(s.nombre_tecnico||s.solicitante)+'</div><div><b>Proyecto:</b> '+s.destino+'</div></div><table><thead><tr><th>Articulo</th><th>Unidad</th><th>Despachado</th><th>Usado</th><th>Devuelto</th></tr></thead><tbody>'+rows+'</tbody></table><div class="firmas"><div class="fbox"><div class="ftit">Devuelve (Tecnico)</div>'+ft+'<div class="fline">Nombre y firma / Fecha</div></div><div class="fbox"><div class="ftit">Recibe bodega (Luis)</div>'+fb+'<div class="fline">Nombre y firma / Fecha</div></div></div><div class="foot">Devolucion registrada el '+fecha+' - GEOINFORMATICA S.A.</div><script>window.onload=function(){window.print()}<\/script></body></html>';
+  const w=window.open('','_blank'); w.document.write(html); w.document.close();
+}
+
+// ===== CANVAS =====
+function iniciarCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle='#1a3a6b'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+  const getPos = e => {
+    const r = canvas.getBoundingClientRect();
+    if (e.touches) return {x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
+    return {x:e.clientX-r.left,y:e.clientY-r.top};
+  };
+  canvas.onmousedown=e=>{isDrawing=true;firmaActiva=id;const p=getPos(e);lastX=p.x;lastY=p.y;};
+  canvas.onmousemove=e=>{if(!isDrawing||firmaActiva!==id)return;const p=getPos(e);ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.stroke();lastX=p.x;lastY=p.y;};
+  canvas.onmouseup=()=>{isDrawing=false;};
+  canvas.ontouchstart=e=>{e.preventDefault();isDrawing=true;firmaActiva=id;const p=getPos(e);lastX=p.x;lastY=p.y;};
+  canvas.ontouchmove=e=>{e.preventDefault();if(!isDrawing||firmaActiva!==id)return;const p=getPos(e);ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.stroke();lastX=p.x;lastY=p.y;};
+  canvas.ontouchend=()=>{isDrawing=false;};
+}
+function limpiarCanvas(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);}
+function canvasToBase64(id){
+  const c=document.getElementById(id);if(!c)return null;
+  const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+  return d.some((v,i)=>i%4===3&&v>0)?c.toDataURL('image/png'):null;
+}
+
+// ===== HELPERS =====
+function buildMsg(s) {
+  const items = JSON.parse(s.items||'[]');
+  const lineas = items.map((i,n)=>`  ${n+1}. ${i.desc} — ${i.qty} ${i.unidad}`).join('\n');
+  return `🏗 *SOLICITUD DE DESPACHO ${s.id}*\n📅 Fecha requerida: ${s.fecha_requerida}\n👤 Solicitante: ${s.solicitante}\n📦 Bodega origen: ${s.origen}\n📍 Destino: ${s.destino}\n`+(s.observaciones?`📝 Obs: ${s.observaciones}\n`:'')+`\n*Artículos:*\n${lineas}\n\n_Por favor confirmar recepción de esta solicitud._`;
+}
+
+function exportarExcel() {
+  if (!todas.length){toast('No hay datos');return;}
+  const rows = todas.map(s=>{
+    const items = JSON.parse(s.items||'[]');
+    const liq = s.liquidacion?JSON.parse(s.liquidacion):null;
+    const dev = s.devolucion?JSON.parse(s.devolucion):null;
+    return {
+      'ID':s.id,'Solicitante':s.solicitante,'Técnico (firmó)':s.nombre_tecnico||'',
+      'Fecha requerida':s.fecha_requerida,'Bodega origen':s.origen,'Destino':s.destino,
+      'Observaciones':s.observaciones||'',
+      'Artículos':items.map(i=>`${i.desc}(${i.qty} ${i.unidad})`).join('; '),
+      'Estado':s.estado,
+      'Creado':s.creado_en?new Date(s.creado_en).toLocaleString('es'):'',
+      'Aprobado':s.aprobado_en?new Date(s.aprobado_en).toLocaleString('es'):'',
+      'Despachado':s.despachado_en?new Date(s.despachado_en).toLocaleString('es'):'',
+      'Días sin liquidar':s.estado==='Despachada'?diasSinLiquidar(s):'',
+      'Boleta(s)':liq?liq.boletas:'',
+      'Hubo devolución':liq?(liq.hubo_devolucion?'Sí':'No'):'',
+      'Fecha liquidación':liq?new Date(liq.fecha).toLocaleString('es'):'',
+      'Devuelto':dev?dev.items.filter(i=>i.devuelve>0).map(i=>`${i.desc}:${i.devuelve}`).join('; '):''
+    };
+  });
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Solicitudes');
+  XLSX.writeFile(wb,`despachos_GEO_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('✅ Excel descargado');
+}
+
+function abrirModalOverlay(){document.getElementById('modal-overlay').classList.add('open');}
+function cerrarModal(e){if(e.target===document.getElementById('modal-overlay'))cerrarModalBtn();}
+function cerrarModalBtn(){document.getElementById('modal-overlay').classList.remove('open');}
+function toast(msg,dur=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur);}
+
+cargar();
+setInterval(cargar,30000);
+</script>
+</body>
+</html>
